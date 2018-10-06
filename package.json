@@ -6,6 +6,8 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "esdoc": "^1.1.0",
+    "esdoc-standard-plugin": "^1.0.0",
     "mocha": "^5.0.1",
     "node-sass": "^4.8.2",
     "nodemon": "^1.14.12",
@@ -27,7 +29,8 @@
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
     "build": "babel src --out-dir cjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "document": "esdoc"
   },
   "dependencies": {
     "@babel/core": "^7.0.0-beta.40",

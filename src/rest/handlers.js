@@ -38,7 +38,7 @@ function Handler(fn) {
  */
 export function preloadResource(req, res, next) {
     const resourceName  = req.params.resource;
-    const resource      = App.getResource(resourceName);
+    const resource      = App.getResource(resourceName).withContext({ user: req.user, request: req })
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);
@@ -70,7 +70,6 @@ export const getOne = Handler(async (req, res) => {
     res.json(record);
 });
     
-
 /**
  * Returns the complete list of records for a given resource
  * 
@@ -93,7 +92,6 @@ export const getAll = Handler(async (req, res) => {
     
     let query = {};
     if (userId) {
-        console.log(userId);
         query._userId = userId;
     }
 

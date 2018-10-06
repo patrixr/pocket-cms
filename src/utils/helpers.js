@@ -19,3 +19,9 @@ export function promisify(method, scope) {
 export function isNumeric (x) {
     return ((typeof x === 'number' || typeof x === 'string') && !isNaN(Number(x)));
 }
+
+export async function asyncEach(list, func) {
+    for (let i = 0; i < list.length; ++i) {
+        await func(list[i]);
+    }
+}

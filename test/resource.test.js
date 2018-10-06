@@ -194,4 +194,104 @@ describe("Resource", () => {
         expect(page2.length).to.equal(4);
     })
 
+    describe("Hooks", () => {
+
+        it("Should allow before and after find hook", async () => {
+            let beforeTriggered = false;
+            let afterTrigerred = false;
+
+            let user = await resource.create({ username: "john", firstname: "john" });
+
+            resource.before("find", async ({ query }, ctx) => {
+                expect(ctx).not.to.be.null;
+                expect(query).not.to.be.null;
+                expect(query._id).to.equal("badId");
+
+                query._id = user._id; // override
+                beforeTriggered = true;
+            });
+
+            resource.after("find", async ({ records }, ctx) => {
+                let record = records[0];
+                expect(ctx).not.to.be.null;
+                expect(record).not.to.be.null;
+                expect(record._id).to.equal(user._id);
+                expect(record.username).to.equal("john");
+
+                record.username = record.username + "ny";
+                afterTrigerred = true;
+            });
+
+            let foundUser = await resource.findOne({ _id: 'badId' });
+            expect(beforeTriggered).to.be.true;
+            expect(afterTrigerred).to.be.true;
+            expect(foundUser.username).to.equal("johnny");
+        });
+
+        it("Should allow before create and save hooks", async () => {
+            let wasCreated = false;
+            let wasSaved = false;
+
+            resource.before("create", async ({ payload }, ctx) => {
+                expect(ctx).not.to.be.null;
+                expect(payload).not.to.be.null;
+                expect(payload.firstname).to.equal("john");
+                expect(payload.username).to.equal("test");
+                wasCreated = true;
+                payload.username = payload.username + "!"
+            });
+
+            resource.before("save", async ({ payload }, ctx) => {
+                expect(ctx).not.to.be.null;
+                expect(payload).not.to.be.null;
+                expect(payload.firstname).to.equal("john");
+                expect(payload.username).to.equal("test!");
+                wasSaved = true;
+                payload.username = payload.username + "@"
+            });
+
+            let user = await resource.create({ username: "test", firstname: "john" });
+            expect(wasCreated).to.be.true;
+            expect(wasSaved).to.be.true;
+            expect(user.username).to.equal("test!@");
+        })
+
+        it("Should allow after create and save hooks", async () => {
+            let wasCreated = false;
+            let wasSaved = false;
+            resource.after("create", async ({ record }, ctx) => {
+                expect(ctx).not.to.be.null;
+                expect(record).not.to.be.null;
+                expect(record._id).not.to.be.null;
+                expect(record.firstname).to.equal("john");
+                expect(record.username).to.equal("test");
+
+                record.username = record.username + "!";
+
+                const inStoreRecord = resource.get(record._id);
+                expect(inStoreRecord).not.to.be.null;
+                wasCreated = true;
+            });
+
+            resource.after("save", async ({ record }, ctx) => {
+                expect(ctx).not.to.be.null;
+                expect(record).not.to.be.null;
+                expect(record._id).not.to.be.null;
+                expect(record.firstname).to.equal("john");
+                expect(record.username).to.equal("test!");
+
+                record.username = record.username + "@";
+
+                const inStoreRecord = resource.get(record._id);
+                expect(inStoreRecord).not.to.be.null;
+                wasSaved = true;
+            });
+
+            let user = await resource.create({ username: "test", firstname: "john" });
+            expect(wasCreated).to.be.true;
+            expect(wasSaved).to.be.true;
+            expect(user.username).to.equal("test!@");
+        })
+    });
+
 })
