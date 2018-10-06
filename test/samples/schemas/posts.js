@@ -1,4 +1,4 @@
-import { TEXT, ENUM, NUMBER, OBJECT_STRICT } from "../utils/schemaUtils";
+import { TEXT, ENUM, NUMBER, OBJECT_STRICT } from "../../../src/utils/schemaUtils";
 
 module.exports = {
   title: "Post",

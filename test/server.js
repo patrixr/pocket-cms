@@ -17,6 +17,9 @@ class TestServer {
         }
 
         this.express = express();
+
+        App.newResource('posts', require('./samples/schemas/posts'));
+
         App.bootstrap(this.express);
 
         this.server = http.createServer(this.express);

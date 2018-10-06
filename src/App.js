@@ -26,12 +26,31 @@ class App {
 
         // ---- Load schemas
         const logger    = log4js.getLogger();
-        const schemas   = requireDir("./schemas");
-        this.resources  = _.mapValues(schemas, (schema, name) => {
-            logger.info(`Loading resource ${chalk.cyanBright(name)}`);
-            return new Resource(name, schema); 
-        });
+        this.resources = {};
+        
+        // const schemas   = requireDir("./schemas");
+        // this.resources  = _.mapValues(schemas, (schema, name) => {
+        //     logger.info(`Loading resource ${chalk.cyanBright(name)}`);
+        //     return new Resource(name, schema); 
+        // });
     }
+
+    /**
+     * Create a new resource
+     * 
+     * @param {*} name 
+     * @param {*} schema 
+     */
+    newResource(name, schema) {
+        if (this.resources[name]) {
+            throw `Resource ${name} already exists`;
+        }
+
+        const resource = new Resource(name, schema);
+        this.resources[name] = resource;
+        return resource;
+    }
+
 
     /**
      * 
