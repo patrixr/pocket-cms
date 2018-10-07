@@ -43,6 +43,7 @@ export class Error {
             logger.error(`Unknown error : `, err);
             code = 500;
         }
+        
         message = (message || defaultErrorMessages[code] || "Internal server error");
         return new Error(code, message);
     }

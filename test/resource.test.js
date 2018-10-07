@@ -79,14 +79,14 @@ describe("Resource", () => {
             .notify(done);
     })
 
-    it("Should update a record", (done) => {
+    it("Should update/merge a single record", (done) => {
         resource.create({ firstname: "John", lastname: "Smith" })
             .then((record) => resource.get(record._id))
             .then((record) => {
                 expect(record).not.to.be.null;
                 expect(record).not.to.be.undefined;
                 record.lastname = "Doe";
-                return resource.update(record._id, record);
+                return resource.mergeOne(record._id, record);
             })
             .then((r) => {
                 expect(r).not.to.be.null;
@@ -173,7 +173,7 @@ describe("Resource", () => {
         resource.create({ firstname: "John" })
             .then((record) => {
                 id = record._id;
-                resource.remove(record._id)
+                resource.removeOne(record._id)
             })
             .then(() => resource.get(id))
             .should.eventually.be.null
@@ -203,7 +203,7 @@ describe("Resource", () => {
             let user = await resource.create({ username: "john", firstname: "john" });
 
             resource.before("find", async ({ query }, ctx) => {
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(query).not.to.be.null;
                 expect(query._id).to.equal("badId");
 
@@ -213,7 +213,7 @@ describe("Resource", () => {
 
             resource.after("find", async ({ records }, ctx) => {
                 let record = records[0];
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(record).not.to.be.null;
                 expect(record._id).to.equal(user._id);
                 expect(record.username).to.equal("john");
@@ -228,12 +228,101 @@ describe("Resource", () => {
             expect(foundUser.username).to.equal("johnny");
         });
 
+        it("Should allow before and after validate hook", async () => {
+            let beforeTriggered = false;
+            let afterTrigerred = false;
+
+            resource.before("validate", async ({ record, schema }, ctx) => {
+                expect(ctx).to.exist;
+                expect(record).to.exist;
+                expect(schema).to.exist;
+                expect(record.username).to.equal("john");
+                record.username += " was";
+                beforeTriggered = true;
+            });
+
+            resource.after("validate", async ({ record, schema, errors }, ctx) => {
+                expect(ctx).to.exist;
+                expect(record).to.exist;
+                expect(schema).to.exist;
+                expect(errors).to.exist;
+                expect(errors).to.be.an('array');
+                expect(record.username).to.equal("john was");
+
+                record.username += " validated";
+                afterTrigerred = true;
+            });
+
+            let user = await resource.create({ username: "john", firstname: "john" });
+            expect(beforeTriggered).to.be.true;
+            expect(afterTrigerred).to.be.true;
+            expect(user.username).to.equal("john was validated");
+        });
+
+        it("Should allow before and after update hook", async () => {
+            let beforeTriggered = false;
+            let afterTrigerred = false;
+
+            let user = await resource.create({ username: "Hulk", firstname: "patrick" });
+
+            resource.before("update", async ({ query, operations }, ctx) => {
+                expect(ctx).to.exist;
+                expect(query).to.exist;
+                expect(operations).to.exist;
+                expect(query._id).to.equal(user._id);
+                beforeTriggered = true;
+            });
+
+            resource.after("update", async ({ records, query, operations }, ctx) => {
+                expect(ctx).to.exist;
+                expect(records).to.exist;
+                expect(query).to.exist;
+                expect(operations).to.exist;
+                expect(records[0].username).to.equal("Hulk");
+
+                records[0].username = "Batman";
+                afterTrigerred = true;
+            });
+
+            user = await resource.mergeOne(user._id, { firstname: "vlad" });
+            expect(beforeTriggered).to.be.true;
+            expect(afterTrigerred).to.be.true;
+            expect(user.username).to.equal("Batman");
+        });
+
+        it("Should allow before and after remove hook", async () => {
+            let beforeTriggered = false;
+            let afterTrigerred = false;
+
+            let user = await resource.create({ username: "Hulk", firstname: "patrick" });
+
+            resource.before("remove", async ({ query, options }, ctx) => {
+                expect(ctx).to.exist;
+                expect(query).to.exist;
+                expect(options).to.exist;
+                expect(query._id).to.equal(user._id);
+                beforeTriggered = true;
+            });
+
+            resource.after("remove", async ({ query, options, removedCount }, ctx) => {
+                expect(ctx).to.exist;
+                expect(query).to.exist;
+                expect(options).to.exist;
+                expect(removedCount).to.equal(1);
+                afterTrigerred = true;
+            });
+
+            await resource.removeOne(user._id);
+            expect(beforeTriggered).to.be.true;
+            expect(afterTrigerred).to.be.true;
+        });
+
         it("Should allow before create and save hooks", async () => {
             let wasCreated = false;
             let wasSaved = false;
 
             resource.before("create", async ({ payload }, ctx) => {
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(payload).not.to.be.null;
                 expect(payload.firstname).to.equal("john");
                 expect(payload.username).to.equal("test");
@@ -242,7 +331,7 @@ describe("Resource", () => {
             });
 
             resource.before("save", async ({ payload }, ctx) => {
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(payload).not.to.be.null;
                 expect(payload.firstname).to.equal("john");
                 expect(payload.username).to.equal("test!");
@@ -260,7 +349,7 @@ describe("Resource", () => {
             let wasCreated = false;
             let wasSaved = false;
             resource.after("create", async ({ record }, ctx) => {
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(record).not.to.be.null;
                 expect(record._id).not.to.be.null;
                 expect(record.firstname).to.equal("john");
@@ -274,7 +363,7 @@ describe("Resource", () => {
             });
 
             resource.after("save", async ({ record }, ctx) => {
-                expect(ctx).not.to.be.null;
+                expect(ctx).to.exist;
                 expect(record).not.to.be.null;
                 expect(record._id).not.to.be.null;
                 expect(record.firstname).to.equal("john");

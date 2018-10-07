@@ -231,7 +231,7 @@ export default class User {
             groups:     this.groups
         }
         if (this.id) {
-            return User.resource.update(this.id, json);
+            return User.resource.mergeOne(this.id, json);
         }
         const record = await User.resource.create(json)
         this.id = record._id;

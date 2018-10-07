@@ -214,7 +214,7 @@ export const deleteAttachment = Handler(async (req, res) => {
  */
 export const updateOne = Handler(async (req, res) => {
     const id    = req.params.id;
-    let record = await req.resource.update(id, req.body);
+    let record = await req.resource.mergeOne(id, req.body);
     res.json(record);
 });
 
@@ -229,6 +229,6 @@ export const updateOne = Handler(async (req, res) => {
  */
 export const removeOne = Handler(async (req, res) => {
     const id    = req.params.id;
-    await req.resource.remove(id);
+    await req.resource.removeOne(id);
     res.sendStatus(200);
 });

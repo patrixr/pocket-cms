@@ -18,8 +18,6 @@ const reservedProperties = [
     "_attachments"
 ];
 
-const allHooks = {};
-
 /**
  * CMS resource. Used to interact with the database
  *
@@ -34,15 +32,14 @@ export class Resource {
         this.context = context;
 
         // ---- Stores
+        //@TODO remove filename, currently used in tests
         this.filename       = path.join(config.dataFolder, name + ".db");
         this.store          = stores.getStore(name, this.getUniqueKeys());
         this.attachments    = stores.getFileStore();
-        this.hooks          = allHooks[name] || {
+        this.hooks          = {
             before: {},
             after: {}
         };
-
-        allHooks[name] = this.hooks;
     }
 
     // ---- Helpers
@@ -51,23 +48,30 @@ export class Resource {
         return _.map(this.schema.properties, (desc, name) => desc.unique ? name : null).filter(_.identity);
     }
 
-    validate(data, opts = {}) {
+    async validate(data, opts = {}) {
         let { isUpdate = false } = opts;
 
         // We don't try to validate internal properties
         let stripped = _.omit(data, reservedProperties);
 
-        // We remove the required fields in order to support partial updates
-        let schema   = isUpdate ? _.omit(this.schema, 'required') : this.schema;
-
-        let results  = new Validator().validate(stripped, schema);
-
-        if (results.errors.length > 0) {
-            let msg = results.errors.map((e) => e.property + " " + e.message).join("\n");
-            return Q.reject(new Error(400, msg));
+        if (this.schema == null) {
+            return stripped
         }
 
-        return Q.resolve(stripped);
+        await this.runHooks({ record: stripped, schema : this.schema }).before('validate');
+
+        // We remove the required fields in order to support partial updates
+        let schema      = isUpdate ? _.omit(this.schema, 'required') : this.schema;
+        let { errors }  = new Validator().validate(stripped, schema);
+
+        await this.runHooks({ record: stripped, schema : this.schema, errors }).after('validate');
+
+        if (errors.length > 0) {
+            let msg = errors.map((e) => e.property + " " + e.message).join("\n");
+            throw new Error(400, msg);
+        }
+
+        return stripped;
     }
 
     // ---- Context
@@ -81,7 +85,13 @@ export class Resource {
      * @memberof Resource
      */
     withContext(ctx) {
-        return new Resource(this.name, this.schema, this.context);
+        let clone = new Resource(this.name, this.schema, ctx);
+        _.keys(this.hooks, (key) => {
+            _.each(this.hooks[key], (handlers, method) => {
+                clone.hooks[key][method] = handlers.map(_.identity);
+            });
+        })
+        return clone;
     }
 
     // ---- Methods
@@ -151,8 +161,7 @@ export class Resource {
         const { userId = null } = opts;
         return this.validate(payload)
             .then(async (data) => {
-               await this.runHooks({ payload: data }).before('create');
-               await this.runHooks({ payload: data }).before('save');
+               await this.runHooks({ payload: data }).before('create', 'save');
                return data;
             })
             .then((data) => {
@@ -164,8 +173,7 @@ export class Resource {
                 return insert(data);
             })
             .then(async (record) => {
-                await this.runHooks({ record }).after('create');
-                await this.runHooks({ record }).after('save');
+                await this.runHooks({ record }).after('create', 'save');
                 return record;
             })
     }
@@ -179,7 +187,7 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    update(id, payload, opts = {}) {
+    mergeOne(id, payload, opts = {}) {
         let { skipValidation } = opts;
  
         let validate = skipValidation ?
@@ -188,8 +196,35 @@ export class Resource {
 
         return validate
             .then((data) => {
-                return this.updateRaw(id, { $set: data });
+                return this.updateOne(id, { $set: data });
             });
+    }
+
+    /**
+     * Update multiple records
+     *
+     * @param {*} query
+     * @param {*} operations
+     * @returns
+     * @memberof Resource
+     */
+    async update(query, operations, opts = {}) {
+        let deferred = Q.defer();
+        let multi    = !!opts.multi;
+
+        await this.runHooks({ query, operations }).before('update', 'save');
+
+        this.store.update(query, operations, { returnUpdatedDocs: true, multi }, async (err, count, result) => {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                const records = _.isArray(result) ? result : [result];
+                await this.runHooks({ query, operations, records }).after('update', 'save');
+                deferred.resolve(result);
+            }
+        });
+
+        return deferred.promise;
     }
 
     /**
@@ -200,16 +235,8 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    updateRaw(id, operations) {
-        let deferred = Q.defer();
-        this.store.update({ _id: id }, operations, { returnUpdatedDocs: true }, (err, count, record) => {
-            if (err) {
-                deferred.reject(err);
-            } else {
-                deferred.resolve(record);
-            }
-        });
-        return deferred.promise;
+    async updateOne(id, operations) {
+        return this.update({ _id: id }, operations, { multi: false });
     }
     
     /**
@@ -219,9 +246,28 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    remove(id) {
-        let remove = promisify(this.store.remove, this.store);
-        return remove({ _id: id }, {});
+    removeOne(id) {
+        return this.remove({ _id: id }, { multi: false });
+    }
+
+    /**
+     * Delete records by query
+     *
+     * @param {*} id
+     * @returns
+     * @memberof Resource
+     */
+    async remove(query, options = { multi: true }) {
+        const multi = !!options.multi;
+        const remove = promisify(this.store.remove, this.store);
+
+        await this.runHooks({ query, options }).before('remove');
+
+        let removedCount = await remove(query, { multi });
+
+        await this.runHooks({ query, options, removedCount }).after('remove');
+
+        return removedCount;
     }
 
     /**
@@ -266,7 +312,7 @@ export class Resource {
             name:   name,
             id:     result.file
         });
-        return this.updateRaw(recordId, { $push: { _attachments: att } });
+        return this.updateOne(recordId, { $push: { _attachments: att } });
     }
 
 
@@ -291,7 +337,7 @@ export class Resource {
         await this.attachments.delete(attachmentId);
 
         let $pull = { _attachments: { id: attachmentId } }; 
-        return this.updateRaw(recordId, { $pull });
+        return this.updateOne(recordId, { $pull });
     }
 
     /**
@@ -328,11 +374,13 @@ export class Resource {
             });  
         };
         return {
-            after: async (method) => {
-                await run(this.hooks.after[method] || []); 
+            after: async (...methods) => {
+                for (let method of methods)
+                    await run(this.hooks.after[method] || []);
             },
-            before: async (method) => {
-                await run(this.hooks.before[method] || []); 
+            before: async (...methods) => {
+                for (let method of methods)
+                    await run(this.hooks.before[method] || []); 
             }
         };
     }
