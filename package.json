@@ -14,17 +14,11 @@
     "rimraf": "^2.6.2",
     "sass-loader": "^6.0.6",
     "supertest": "^3.0.0",
-    "url-loader": "^0.6.2",
-    "webpack": "^3.11.0",
-    "webpack-css-loaders": "^1.0.0",
-    "webpack-dev-server": "^2.11.1"
+    "url-loader": "^0.6.2"
   },
   "scripts": {
-    "webpack": "webpack",
-    "build:watch": "webpack --watch",
     "serve": "node bin/serve.js",
     "serve:watch": "nodemon bin/serve.js",
-    "dev": "webpack-dev-server --hot --watch-poll --progress --inline",
     "test": "mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
@@ -58,12 +52,7 @@
     "nedb": "^1.8.0",
     "pvault": "^1.0.3",
     "q": "^1.5.1",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "react-router-dom": "^4.2.2",
     "require-dir": "^1.0.0",
-    "semantic-ui-css": "^2.3.0",
-    "semantic-ui-react": "^0.78.2",
     "uuid": "^3.2.1"
   }
 }
