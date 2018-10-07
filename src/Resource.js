@@ -32,14 +32,19 @@ export class Resource {
         this.context = context;
 
         // ---- Stores
-        //@TODO remove filename, currently used in tests
-        this.filename       = path.join(config.dataFolder, name + ".db");
-        this.store          = stores.getStore(name, this.getUniqueKeys());
-        this.attachments    = stores.getFileStore();
+        this.filename       = path.join(config.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
         this.hooks          = {
             before: {},
             after: {}
         };
+    }
+
+    get store() {
+        return stores.getStore(this.name, this.getUniqueKeys());
+    }
+
+    get attachments() {
+        return stores.getFileStore();
     }
 
     // ---- Helpers
