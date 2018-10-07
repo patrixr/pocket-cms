@@ -61,7 +61,7 @@ export class LocalFileStore {
     // ---- API
 
     /**
-     * 
+     * Saves the incoming stream into a file
      * 
      * @param {String} filename 
      * @param {Stream} istream 

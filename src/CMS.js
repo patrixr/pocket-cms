@@ -7,9 +7,9 @@ import defaultConfig    from "./utils/config"
 /**
  * CMS main class
  *
- * @class App
+ * @class CMS
  */
-class App {
+class CMS {
 
     constructor(config) {
         // ---- Load schemas
@@ -21,6 +21,7 @@ class App {
      * Sets the CMS configuration
      * 
      * @param {*} opts 
+     * @memberof CMS
      */
     configure(opts) {
         _.extend(this.config, opts);
@@ -32,6 +33,7 @@ class App {
      * 
      * @param {*} name 
      * @param {*} schema 
+     * @memberof CMS
      */
     newResource(name, schema) {
         const resource = new Resource(name, schema);
@@ -42,7 +44,7 @@ class App {
      * Register a resource for api endpoint generation
      *
      * @param {*} resource
-     * @memberof App
+     * @memberof CMS
      */
     registerResource(resource) {
         if (this.resources[resource.name]) {
@@ -53,9 +55,10 @@ class App {
     }
 
     /**
-     * 
+     * Returns a registered resource
      * 
      * @param {*} name 
+     * @memberof CMS
      */
     getResource(name) {
         return this.resources[name];
@@ -64,20 +67,21 @@ class App {
     /**
      * Sets up the routes
      * 
-     * @returns {Express} app
+     * @returns {CMS} cms
      * @param {Express} app 
+     * @memberof CMS
      */
     bootstrap(app) {
 
         // Adding users in for admin panel access
-        app.use("/users", authentication());
+        CMS.use("/users", authentication());
 
         // Auto-generated rest api
-        app.use("/ws", rest());
+        CMS.use("/ws", rest());
 
-        return app;
+        return this;
     }
 
 }
 
-export default new App();
+export default new CMS();
