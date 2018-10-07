@@ -1,5 +1,4 @@
 import { Resource }     from "../src/Resource";
-import config           from "../config";
 import fs               from "fs"
 import path             from "path"
 import rimraf           from "rimraf"

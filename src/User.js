@@ -3,8 +3,7 @@ import bcrypt               from "bcrypt"
 import Q                    from "q"
 import _                    from "lodash"
 import jwt                  from "jsonwebtoken"
-import keys                 from "../config/keys"
-import config               from "../config"
+import config               from "./utils/config"
 import { 
     INVALID_USER_GROUP,
     INVALID_USERNAME_PW,
@@ -168,7 +167,7 @@ export default class User {
      */
     static fromJWT(token) {
         const deferred = Q.defer();
-        const secret = keys.get("jwt_secret");
+        const secret = config.session.secret;
 
         jwt.verify(token, secret, (err, decoded = {}) => {
             if (err) {
@@ -217,7 +216,7 @@ export default class User {
     }
 
     jwt() {
-        const secret = keys.get("jwt_secret");
+        const secret = config.session.secret;
         const payload = _.extend({}, this.toPlainObject(), { timestamp: _.now() });
         return jwt.sign(payload, secret, {
             expiresIn: config.session.expiresIn

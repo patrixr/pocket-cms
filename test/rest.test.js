@@ -3,10 +3,10 @@ import request          from "supertest"
 import path             from "path"
 import rimraf           from "rimraf"
 import _                from "lodash"
-import config           from "../config";
+import config           from "../src/utils/config";
 import TestServer       from "./server"
 import { expect }       from "chai"
-import App              from "../src/App"
+import CMS              from "../src/CMS"
 import User             from '../src/User';
 
 describe("Rest", () => {
@@ -19,19 +19,19 @@ describe("Rest", () => {
 
     beforeEach((done) => {
         Q.all(
-            _.values(App.resources).map(r => r.drop())  
+            _.values(CMS.resources).map(r => r.drop())  
         )
         .then(() => done());
     })
 
     after((done) => {
         TestServer.close();
-        _.values(App.resources)
+        _.values(CMS.resources)
             .forEach(r => {
                 console.log(`\n\t# Dropping database ${r.name}.db`);
                 rimraf.sync(r.filename);
             });
-        rimraf.sync(config.uploadFolder);
+        rimraf.sync(config.filestore.options.uploadFolder);
         done();
     })
 
@@ -48,7 +48,7 @@ describe("Rest", () => {
     }
 
     async function createPost(userId) {
-        const posts = App.getResource('posts');
+        const posts = CMS.getResource('posts');
         const newPost = await posts.create(sampleData, { userId });
         expect(newPost._id).to.exist;
         expect(newPost._id).to.not.be.null;
@@ -64,6 +64,16 @@ describe("Rest", () => {
     // ---- Tests
 
     describe("Web Service /ws", () => {
+
+        before((done) => {
+            config.testing.disableAuthentication = true;
+            done();
+        });
+
+        after((done) => {
+            config.testing.disableAuthentication = false;
+            done();
+        });
 
         it("Should return empty array if the db is empty", (done) => {
             request(TestServer.baseUrl)
@@ -205,7 +215,7 @@ describe("Rest", () => {
         })
 
         it("Should delete an attachment from it's id", async () => {
-            const resource = App.getResource('posts');
+            const resource = CMS.getResource('posts');
 
             // Create a post with an attachment
             let { _id } = await createPost();
@@ -244,7 +254,6 @@ describe("Rest", () => {
 
         afterEach((done) => {
             User.resource.drop().then(() => {
-                config.testing.disableAuthentication = true;
                 done();
             });
         })

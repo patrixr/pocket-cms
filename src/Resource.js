@@ -1,7 +1,7 @@
 import stores           from "./stores"
 import path             from "path"
-import config           from "../config"
-import env              from "../config/env"
+import config           from "./utils/config"
+import env              from "./utils/env"
 import Q                from "q"
 import _                from "lodash"
 import log4js           from "log4js"
@@ -32,7 +32,7 @@ export class Resource {
         this.context = context;
 
         // ---- Stores
-        this.filename       = path.join(config.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
+        this.filename       = path.join(config.datastore.options.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
         this.hooks          = {
             before: {},
             after: {}

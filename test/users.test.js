@@ -2,7 +2,7 @@ import _                    from "lodash"
 import { expect }           from "chai"
 import Q                    from "q"
 import User                 from "../src/User"
-import config               from "../config"
+import config               from "../src/utils/config"
 import rimraf               from "rimraf"
 
 describe("Users", () => {

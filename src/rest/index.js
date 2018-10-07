@@ -1,8 +1,8 @@
 import { Router }       from "express"
 import * as handlers    from "./handlers"
 import bodyParser       from "body-parser"
-import env              from "../../config/env"
-import config           from "../../config"
+import env              from "../utils/env"
+import config           from "../utils/config"
 import { FORBIDDEN }    from "../utils/errors"
 import User             from '../User'
 import session          from "../authentication/session"
@@ -16,6 +16,7 @@ export default function () {
     router.use(bodyParser.json());
     router.use(session);
     router.use('(/users/:userId)?/*', (req, res, next) => {
+
         if (env() === "test" && config.testing.disableAuthentication) {
             return next();
         }

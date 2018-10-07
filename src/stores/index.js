@@ -3,7 +3,7 @@ import Datastore        from "nedb"
 import path             from "path"
 import log4js           from "log4js"
 import {LocalFileStore} from "./files/LocalFileStore"
-import config           from "../../config"
+import config           from "../utils/config"
 
 let logger = log4js.getLogger();
 let stores = {};
@@ -18,7 +18,7 @@ let fileStore = null;
  */
 export function getStore(name, uniqueKeys = []) {
     if (!stores[name]) {
-        const filename       = path.join(config.dataFolder, name + ".db");
+        const filename       = path.join(config.datastore.options.dataFolder, name + ".db");
         const store          = new Datastore({ filename:  filename, autoload: true  });
 
         _.each(uniqueKeys, (fieldName) => { 
@@ -39,7 +39,7 @@ export function getStore(name, uniqueKeys = []) {
  */
 export function getFileStore() {
     if (!fileStore) {
-        fileStore = new LocalFileStore(config.uploadFolder);
+        fileStore = new LocalFileStore(config.filestore.options.uploadFolder);
     }
     return fileStore;
 }

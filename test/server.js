@@ -1,5 +1,5 @@
 import express  from "express"
-import App      from "../src/App"
+import CMS      from "../src/CMS"
 import _        from "lodash"
 import http     from "http"
 
@@ -18,9 +18,9 @@ class TestServer {
 
         this.express = express();
 
-        App.newResource('posts', require('./samples/schemas/posts'));
+        CMS.newResource('posts', require('./samples/schemas/posts'));
 
-        App.bootstrap(this.express);
+        CMS.bootstrap(this.express);
 
         this.server = http.createServer(this.express);
         this.server.listen(this.port, () => {

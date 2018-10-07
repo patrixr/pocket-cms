@@ -1,4 +1,6 @@
-import Q from "q"
+import _    from "lodash"
+import Q    from "q"
+import fs   from "fs";
 
 export function promisify(method, scope) {
     return function (...args) {
@@ -24,4 +26,17 @@ export async function asyncEach(list, func) {
     for (let i = 0; i < list.length; ++i) {
         await func(list[i]);
     }
+}
+
+export function stringFromFile(file, defaultValue) {
+    if (fs.existsSync(file)) {
+        return fs.readFileSync(file).toString();
+    }
+
+    if (_.isFunction(defaultValue)) {
+        defaultValue = defaultValue();
+    }
+
+    fs.writeFileSync(file, defaultValue);
+    return defaultValue;
 }

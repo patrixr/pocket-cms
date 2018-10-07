@@ -3,7 +3,7 @@ require('babel-register')({
     presets: [ 'env' ]
 });
 
-var env             = require("../config/env");
+var env             = require("../src/utils/env").default;
 var chai            = require("chai");
 var chaiAsPromised  = require("chai-as-promised");
 var rimraf          = require("rimraf");
@@ -19,5 +19,5 @@ logger.info("Setting up test environment");
 env("test");
 
 // only import the config after setting the environment
-const config = require("../config").default;
-rimraf.sync(config.dataFolder + "/*");
+const config = require("../src/utils/config").default;
+rimraf.sync(config.datastore.options.dataFolder + "/*");

@@ -5,7 +5,7 @@ require('babel-register')({
 
 var express = require("express");
 var log4js  = require("log4js");
-var App     = require("../src/App").default;
+var CMS     = require("../src/CMS").default;
 
 let logger  = log4js.getLogger();
 let server  = express();
@@ -13,7 +13,7 @@ let port    = 8000;
 
 logger.level = 'info';
 
-App.bootstrap(server);
+CMS.bootstrap(server);
 
 server.listen(port, () => {
     logger.info(`Server running on port ${port}`);

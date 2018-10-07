@@ -1,4 +1,4 @@
-import App          from "../App"
+import CMS          from "../CMS"
 import log4js       from "log4js"
 import _            from "lodash"
 import Busboy       from 'busboy'
@@ -38,7 +38,7 @@ function Handler(fn) {
  */
 export function preloadResource(req, res, next) {
     const resourceName  = req.params.resource;
-    const resource      = App.getResource(resourceName).withContext({ user: req.user, request: req })
+    const resource      = CMS.getResource(resourceName).withContext({ user: req.user, request: req })
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);

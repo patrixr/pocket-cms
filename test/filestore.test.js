@@ -1,4 +1,4 @@
-import config           from "../config";
+import config           from "../src/utils/config";
 import fs               from "fs"
 import path             from "path"
 import rimraf           from "rimraf"
@@ -6,6 +6,8 @@ import _                from "lodash"
 import Q                from "q"
 import { expect }       from "chai"
 import {LocalFileStore} from '../src/stores/files/LocalFileStore';
+
+const uploadFolder = config.filestore.options.uploadFolder;
 
 describe("Filestore", () => {
 
@@ -22,18 +24,18 @@ describe("Filestore", () => {
     }
 
     const assertUploadExists = (f) => {
-        const uri = path.join(config.uploadFolder, f);
+        const uri = path.join(uploadFolder, f);
         expect(fs.existsSync(uri)).to.be.true;
     };
 
 
     beforeEach((done) => {
-        filestore = new LocalFileStore(config.uploadFolder);
+        filestore = new LocalFileStore(uploadFolder);
         done();
     })
 
     afterEach((done) => {
-        rimraf(config.uploadFolder, done);
+        rimraf(uploadFolder, done);
     })
 
     it("Should save a file to disk", (done) => {
@@ -83,7 +85,7 @@ describe("Filestore", () => {
                     .then(() => filename);
             })
             .then((filename) => {
-                expect(fs.existsSync(path.join(config.uploadFolder, filename))).to.be.false;
+                expect(fs.existsSync(path.join(uploadFolder, filename))).to.be.false;
             })
             .should.be.fulfilled
             .notify(done);
