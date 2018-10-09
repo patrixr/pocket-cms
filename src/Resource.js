@@ -12,7 +12,7 @@ import { Validator }    from "jsonschema"
 const logger = log4js.getLogger();
 const reservedProperties = [ 
     "_id",
-    "_userId",
+    "_createdBy",
     "_createdAt", 
     "_updatedAt",
     "_attachments"
@@ -174,7 +174,7 @@ export class Resource {
                 data._createdAt = Date.now();
                 data._updatedAt = Date.now();
                 data._attachments = [];
-                data._userId = userId;
+                data._createdBy = userId;
                 return insert(data);
             })
             .then(async (record) => {

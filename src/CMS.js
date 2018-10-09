@@ -74,10 +74,10 @@ class CMS {
     bootstrap(app) {
 
         // Adding users in for admin panel access
-        CMS.use("/users", authentication());
+        app.use("/users", authentication());
 
         // Auto-generated rest api
-        CMS.use("/ws", rest());
+        app.use("/rest", rest());
 
         return this;
     }

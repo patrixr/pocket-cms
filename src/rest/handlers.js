@@ -64,7 +64,7 @@ export const getOne = Handler(async (req, res) => {
     if (!record)
         throw RESOURCE_NOT_FOUND;
 
-    if (userId && record._userId != userId)
+    if (userId && record._createdBy != userId)
         throw RESOURCE_NOT_FOUND;
     
     res.json(record);
@@ -92,7 +92,7 @@ export const getAll = Handler(async (req, res) => {
     
     let query = {};
     if (userId) {
-        query._userId = userId;
+        query._createdBy = userId;
     }
 
     const records = await req.resource.find(query, paginationOptions);

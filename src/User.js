@@ -17,8 +17,7 @@ export default class User {
     static get Groups() {
         return {
             ADMINS: "admins",
-            USERS:  "users",
-            TRAINERS: "trainers"
+            USERS:  "users"
         }
     }
 
@@ -30,7 +29,7 @@ export default class User {
 
     static get resource() {
         if (!User._resource) {
-            User._resource = User._resource || new Resource("_users", {
+            User._resource = new Resource("_users", {
                 "id": "User",
                 "type": "object",
                 "properties": {
@@ -43,7 +42,14 @@ export default class User {
                         }
                     },
                     "hash": {"type":"string"},
-                    "userData": {"type": "object"}
+                    "userData": {"type": "object"},
+                    "permissions": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": { "type" : "string" }
+                        }
+                    }
                 },
                 "additionalProperties": false
             });
@@ -73,10 +79,11 @@ export default class User {
         if (!valid) throw INVALID_USERNAME_PW;
 
         let user = new User();
-        user.username   = userRecord.username;
-        user.groups     = userRecord.groups;
-        user.hash       = userRecord.hash;
-        user.id         = userRecord._id;
+        user.username       = userRecord.username;
+        user.groups         = userRecord.groups;
+        user.hash           = userRecord.hash;
+        user.permissions    = userRecord.permissions;
+        user.id             = userRecord._id;
 
         return user;
     }
@@ -88,7 +95,7 @@ export default class User {
      * @param {*} password
      * @param {*} groups
      */
-    static async create(username, password, groups = [ "users" ]) {
+    static async create(username, password, groups = [ "users" ], permissions = {}) {
         if (_.isString(groups)) {
             groups = [ groups ];
         }
@@ -105,9 +112,10 @@ export default class User {
         }
         
         let user = new User();
-        user.username   = username;
-        user.groups     = groups;
-        user.hash       = await User.hashPassword(password);
+        user.username       = username;
+        user.groups         = groups;
+        user.permissions    = permissions;
+        user.hash           = await User.hashPassword(password);
 
         return user.save();
     }
@@ -117,11 +125,12 @@ export default class User {
      * @param {*} record 
      */
     static async fromRecord(record) {
-        let user        = new User();
-        user.id         = record._id;
-        user.groups     = record.groups;
-        user.username   = record.username;
-        user.hash       = record.hash;
+        let user            = new User();
+        user.id             = record._id;
+        user.groups         = record.groups;
+        user.username       = record.username;
+        user.permissions    = record.permissions;
+        user.hash           = record.hash;
         return user;
     }
 
@@ -205,13 +214,15 @@ export default class User {
         this.hash               = null;
         this.username           = null;
         this.groups             = null;
+        this.permissions        = null;
     }
 
     toPlainObject() {
         return {
-            id:         this.id,
-            username:   this.username,
-            groups:     this.groups
+            id:             this.id,
+            username:       this.username,
+            groups:         this.groups,
+            permissions:    this.permissions
         };
     }
 
@@ -224,10 +235,15 @@ export default class User {
     }
 
     async save() {
+        for (let res in this.permissions) {
+            this.permissions[res] = this.permissions[res].map(action => action.toLowerCase());
+        }
+
         const json = {
-            hash:       this.hash,
-            username:   this.username,
-            groups:     this.groups
+            hash:           this.hash,
+            username:       this.username,
+            groups:         this.groups,
+            permissions:    this.permissions
         }
         if (this.id) {
             return User.resource.mergeOne(this.id, json);
@@ -235,6 +251,14 @@ export default class User {
         const record = await User.resource.create(json)
         this.id = record._id;
         return this;
+    }
+
+    isAllowed(action, resourceName) {
+        action = action.toLowerCase();
+        return !!_.find([ "*", resourceName ], (key) => {
+            const allowedActions = this.permissions[key] || [];
+            return _.find(allowedActions, (it) => it === action);
+        });
     }
 
 }

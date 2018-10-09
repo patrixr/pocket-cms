@@ -8,6 +8,11 @@ import {
     INVALID_USERNAME_PW, 
     UNAUTHORIZED }   from "../utils/errors"
 
+const DEFAULT_PERMISSIONS = {
+    ALL_ACCESS: { "*" : [ 'read', 'create', 'update', 'remove' ] },
+    READ_ONLY: { "*" : [ 'read' ] }
+};
+
 export default function () {
     let router = Router();
 
@@ -21,13 +26,14 @@ export default function () {
             
             const groups = req.body.groups || [ User.Groups.USERS ];
             if (_.find(groups, grp => User.isAdminGroup(grp))) {
+                // We allow the very first admin to register
                 let admins = await User.getAdmins();
                 if (admins.length > 0) {
                     throw UNAUTHORIZED;
                 }
             }
 
-            let user = await User.create(req.body.username, req.body.password, groups);
+            let user = await User.create(req.body.username, req.body.password, groups, DEFAULT_PERMISSIONS.READ_ONLY);
             res.json({
                 authenticated: true,
                 token: user.jwt(),

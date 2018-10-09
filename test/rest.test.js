@@ -63,7 +63,7 @@ describe("Rest", () => {
 
     // ---- Tests
 
-    describe("Web Service /ws", () => {
+    describe("Web Service /rest", () => {
 
         before((done) => {
             config.testing.disableAuthentication = true;
@@ -77,7 +77,7 @@ describe("Rest", () => {
 
         it("Should return empty array if the db is empty", (done) => {
             request(TestServer.baseUrl)
-                .get('/ws/posts')
+                .get('/rest/posts')
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .expect('Content-Length', '2')
@@ -87,7 +87,7 @@ describe("Rest", () => {
 
         it("Should create an item with a post request", (done) => {
             request(TestServer.baseUrl)
-                .post('/ws/posts')
+                .post('/rest/posts')
                 .send(sampleData)
                 .expect(200)
                 .end(done)
@@ -95,7 +95,7 @@ describe("Rest", () => {
 
         it("Should fail to create a record with an invalid schema", (done) => {
             request(TestServer.baseUrl)
-                .post('/ws/posts')
+                .post('/rest/posts')
                 .send(_.extend({}, sampleData, { bad: 'property'}))
                 .expect(400)
                 .end(done);
@@ -104,7 +104,7 @@ describe("Rest", () => {
             await createPosts(10);
 
             let res1 = await request(TestServer.baseUrl)
-                .get('/ws/posts')
+                .get('/rest/posts')
                 .query({ pageSize: 6, page: 1 })
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -114,7 +114,7 @@ describe("Rest", () => {
             expect(page1).to.have.length(6);
 
             let res2 = await request(TestServer.baseUrl)
-                .get('/ws/posts')
+                .get('/rest/posts')
                 .query({ pageSize: 6, page: 2 })
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -128,7 +128,7 @@ describe("Rest", () => {
             await createPosts(10);
 
             const response = await request(TestServer.baseUrl)
-                .get('/ws/posts')
+                .get('/rest/posts')
                 .expect(200)
                 .expect('Content-Type', /json/);
                 
@@ -143,7 +143,7 @@ describe("Rest", () => {
         it("Should fetch a single record using it's id", async () => {
             let post = await createPost();
             let response = await request(TestServer.baseUrl)
-                .get(`/ws/posts/${post._id}`)
+                .get(`/rest/posts/${post._id}`)
                 .expect(200)
                 .expect('Content-Type', /json/);
 
@@ -155,13 +155,14 @@ describe("Rest", () => {
 
         it("Should update an item with a post", async () => {
             let post = await createPost();
+            console.log(post);
             await request(TestServer.baseUrl)
-                .post(`/ws/posts/${post._id}`)
+                .put(`/rest/posts/${post._id}`)
                 .send({ message: 'new message' })
                 .expect(200);
 
             let { body }  = await request(TestServer.baseUrl)
-                .get(`/ws/posts/${post._id}`);
+                .get(`/rest/posts/${post._id}`);
             
             expect(body).to.been.an('object');
             expect(body).to.contain.keys([ ...properties, "_id" ]);
@@ -171,7 +172,7 @@ describe("Rest", () => {
         it("Should attach a file an item with a post", async () => {
             let post = await createPost();
             let { body } = await request(TestServer.baseUrl)
-                .post(`/ws/posts/${post._id}/attachments`)
+                .post(`/rest/posts/${post._id}/attachments`)
                 .attach('myfile', testFile('sample_image.png'))
                 .expect(200);
             
@@ -186,20 +187,20 @@ describe("Rest", () => {
         it("Should fail to download an attachment with a bad id", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .get(`/ws/posts/${post._id}/attachments/badid`)
+                .get(`/rest/posts/${post._id}/attachments/badid`)
                 .expect(404);
         })
 
         it("Should fail to download an attachment of a record that doesn't exist", async () => {
             await request(TestServer.baseUrl)
-                .get(`/ws/posts/idontexist/attachments/1234`)
+                .get(`/rest/posts/idontexist/attachments/1234`)
                 .expect(404);
         })
 
         it("Should download an attachment from it's id", async () => {
             let post = await createPost();
             let { body } = await request(TestServer.baseUrl)
-                .post(`/ws/posts/${post._id}/attachments`)
+                .post(`/rest/posts/${post._id}/attachments`)
                 .attach('myfile', testFile('sample_image.png'))
                 .expect(200);
             
@@ -207,7 +208,7 @@ describe("Rest", () => {
             expect(body._attachments[0].id).not.to.be.null;
 
             let { headers } = await request(TestServer.baseUrl)
-                .get(`/ws/posts/${post._id}/attachments/${body._attachments[0].id}`)
+                .get(`/rest/posts/${post._id}/attachments/${body._attachments[0].id}`)
                 .expect(200);
 
             expect(headers['content-type']).to.equal('image/png');
@@ -225,14 +226,14 @@ describe("Rest", () => {
             // Delete the attachment
             let attachmentId = post._attachments[0].id;
             await request(TestServer.baseUrl)
-                .delete(`/ws/posts/${_id}/attachments/${attachmentId}`)
+                .delete(`/rest/posts/${_id}/attachments/${attachmentId}`)
                 .expect(200);
 
             let updatedPost = await resource.get(_id);
             expect(updatedPost._attachments.length).to.equal(0);
             
             await request(TestServer.baseUrl)
-                .get(`/ws/posts/${_id}/attachments/${attachmentId}`)
+                .get(`/rest/posts/${_id}/attachments/${attachmentId}`)
                 .expect(404);
         })
 
@@ -240,11 +241,11 @@ describe("Rest", () => {
             let { _id } = await createPost();
 
             await request(TestServer.baseUrl)
-                .delete(`/ws/posts/${_id}`)
+                .delete(`/rest/posts/${_id}`)
                 .expect(200);
 
             await request(TestServer.baseUrl)
-                .get(`/ws/posts/${_id}`)
+                .get(`/rest/posts/${_id}`)
                 .expect(404);
         })
 
@@ -274,7 +275,7 @@ describe("Rest", () => {
                 .post("/users/signup")
                 .send({
                     username: "admin",
-                    password: "qwerty",
+                    password: "password",
                     groups: [ "admins" ]
                 })
                 .expect(200)
@@ -282,13 +283,13 @@ describe("Rest", () => {
         });
 
         it("Should sign in and receive an authentication token", async () => {
-            await User.create("admin", "qwerty", [ "admins" ]);
+            await User.create("admin", "password", [ "admins" ]);
             const { body } = 
                 await request(TestServer.baseUrl)
                     .post("/users/login")
                     .send({
                         username: "admin",
-                        password: "qwerty"
+                        password: "password"
                     })
                     .expect(200);
 
@@ -303,13 +304,13 @@ describe("Rest", () => {
         });
 
         it("Should allow users to refresh their jwt token", async () => {
-            await User.create("admin", "qwerty", [ "admins" ]);
+            await User.create("admin", "password", [ "admins" ]);
             const loginResponse = 
                 await request(TestServer.baseUrl)
                     .post("/users/login")
                     .send({
                         username: "admin",
-                        password: "qwerty"
+                        password: "password"
                     })
                     .expect(200);
 
@@ -334,7 +335,7 @@ describe("Rest", () => {
                 .post("/users/signup")
                 .send({
                     username: "admin2",
-                    password: "qwerty2",
+                    password: "password2",
                     groups: [ "admins", "users" ]
                 })
                 .expect(401);
@@ -374,13 +375,15 @@ describe("Rest", () => {
 
     })
 
-    describe("Global Webservice security /ws/:resource", () => {
+    describe("Global Webservice security /rest/:resource", () => {
 
         beforeEach((done) => {
             config.testing.disableAuthentication = false;
             Q.all([
-                User.create("testadmin", "qwerty", [ "admins" ]),
-                User.create("testuser", "qwerty", [ "users" ])
+                User.create("adminUser", "password", [ "admins" ]),
+                User.create("noPermissionUser", "password", [ "users" ]),
+                User.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
+                User.create("createUser", "password", [ "users" ], { "posts": [ "create" ] })
             ])
             .then(() => done())
             .catch(e => console.log(e));
@@ -404,54 +407,67 @@ describe("Rest", () => {
 
         it("Should fail to create an item when not logged in", async () => {
             await request(TestServer.baseUrl)
-                .post(`/ws/posts`)
+                .post(`/rest/posts`)
                 .send(sampleData)
-                .expect(403);
+                .expect(401);
         })
 
         it("Should fail to update an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .post(`/ws/posts/${post._id}`)
+                .post(`/rest/posts/${post._id}`)
                 .send({ message: 'new message' })
-                .expect(403);
+                .expect(401);
         })
 
         it("Should fail to read an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .get(`/ws/posts/${post._id}`)
-                .expect(403);
+                .get(`/rest/posts/${post._id}`)
+                .expect(401);
         })
 
         it("Should fail to delete an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .delete(`/ws/posts/${post._id}`)
-                .expect(403);
+                .delete(`/rest/posts/${post._id}`)
+                .expect(401);
         })
 
-        it("Should fail to read items of other users when logging in as a User", async () => {
-            const token = await logIn("testuser", "qwerty");
+        it("Should only be able to read items with READ permission", async () => {
+            const tokenA = await logIn("noPermissionUser", "password");
             await request(TestServer.baseUrl)
-                .get(`/ws/posts`)
-                .set('Authorization', 'Bearer ' + token)
+                .get(`/rest/posts`)
+                .set('Authorization', 'Bearer ' + tokenA)
                 .expect(403);
+
+            const tokenB = await logIn("readUser", "password");
+            await request(TestServer.baseUrl)
+                .get(`/rest/posts`)
+                .set('Authorization', 'Bearer ' + tokenB)
+                .expect(200);
         })
 
-        it("Should fail to create an item after logging in as a User", async () => {
-            const token = await logIn("testuser", "qwerty");
+        it("Should only be able to create items with CREATE permission", async () => {
+            const tokenA = await logIn("noPermissionUser", "password");
             await request(TestServer.baseUrl)
-                .post(`/ws/posts`)
-                .set('Authorization', 'Bearer ' + token)
+                .post(`/rest/posts`)
+                .set('Authorization', 'Bearer ' + tokenA)
                 .send(sampleData)
                 .expect(403);
+
+            const tokenB = await logIn("createUser", "password");
+            await request(TestServer.baseUrl)
+                .post(`/rest/posts`)
+                .set('Authorization', 'Bearer ' + tokenB)
+                .send(sampleData)
+                .expect(200);
         })
 
         it("Should permit creating an item after logging in as Admin", async () => {
-            const token = await logIn("testadmin", "qwerty");
+            const token = await logIn("adminUser", "password");
             await request(TestServer.baseUrl)
-                .post(`/ws/posts`)
+                .post(`/rest/posts`)
                 .set('Authorization', 'Bearer ' + token)
                 .send(sampleData)
                 .expect(200);
@@ -459,13 +475,13 @@ describe("Rest", () => {
 
     })
 
-    describe("User webservice security (/ws/users/:userId/:resource)", () => {
+    describe("User api prefix (/rest/users/:userId/:resource)", () => {
 
         let uid = null;
 
         beforeEach((done) => {
             config.testing.disableAuthentication = false;
-            User.create("testuser", "qwerty", [ "users" ])
+            User.create("testuser", "password", [ "admins" ])
                 .then((user) => {
                     uid = user.id;
                     done()
@@ -491,70 +507,56 @@ describe("Rest", () => {
 
         it("Should fail to create an item when not logged in", async () => {
             await request(TestServer.baseUrl)
-                .post(`/ws/users/${uid}/posts`)
+                .post(`/rest/users/${uid}/posts`)
                 .send(sampleData)
-                .expect(403);
+                .expect(401);
         })
 
         it("Should fail to update an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .post(`/ws/users/${uid}/posts/${post._id}`)
+                .post(`/rest/users/${uid}/posts/${post._id}`)
                 .send({ message: 'new message' })
-                .expect(403);
+                .expect(401);
         })
 
         it("Should fail to read an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .get(`/ws/users/${uid}/posts/${post._id}`)
-                .expect(403);
+                .get(`/rest/users/${uid}/posts/${post._id}`)
+                .expect(401);
         })
 
         it("Should fail to delete an item when not logged in", async () => {
             let post = await createPost();
             await request(TestServer.baseUrl)
-                .delete(`/ws/users/${uid}/posts/${post._id}`)
-                .expect(403);
+                .delete(`/rest/users/${uid}/posts/${post._id}`)
+                .expect(401);
         })
 
         it("Should permit creating an item as a user", async () => {
-            const token = await logIn("testuser", "qwerty");
+            const token = await logIn("testuser", "password");
             const { body } = await request(TestServer.baseUrl)
-                .post(`/ws/users/${uid}/posts`)
+                .post(`/rest/users/${uid}/posts`)
                 .set('Authorization', 'Bearer ' + token)
                 .send(sampleData)
                 .expect(200);
 
-            expect(body._userId).to.equal(uid);
+            expect(body._createdBy).to.equal(uid);
         })
 
         it("Should only read posts for that specific user", async () => {
             await createPosts(10);
             await createPosts(3, uid);
 
-            const token = await logIn("testuser", "qwerty");
+            const token = await logIn("testuser", "password");
             const { body } = await request(TestServer.baseUrl)
-                .get(`/ws/users/${uid}/posts`)
+                .get(`/rest/users/${uid}/posts`)
                 .set('Authorization', 'Bearer ' + token)
                 .expect(200);
 
             expect(body).to.be.an('array');
             expect(body.length).to.equal(3);
-        })
-        it("Should not be allowed to get a post from another user", async () => {
-            const post = await createPost("anotherUserId");
-
-            const token = await logIn("testuser", "qwerty");
-            await request(TestServer.baseUrl)
-                .get(`/ws/users/anotherUserId/posts/${post._id}`)
-                .set('Authorization', 'Bearer ' + token)
-                .expect(403);
-
-            await request(TestServer.baseUrl)
-                .get(`/ws/users/anotherUserId/posts`)
-                .set('Authorization', 'Bearer ' + token)
-                .expect(403);
         })
 
     })
