@@ -1,5 +1,5 @@
 {
-  "name": "humble-cms",
+  "name": "pocket-cms",
   "version": "1.0.0",
   "main": "cjs/CMS.js",
   "license": "MIT",
