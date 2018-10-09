@@ -155,7 +155,6 @@ describe("Rest", () => {
 
         it("Should update an item with a post", async () => {
             let post = await createPost();
-            console.log(post);
             await request(TestServer.baseUrl)
                 .put(`/rest/posts/${post._id}`)
                 .send({ message: 'new message' })

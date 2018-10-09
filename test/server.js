@@ -20,7 +20,7 @@ class TestServer {
 
         CMS.newResource('posts', require('./samples/schemas/posts'));
 
-        CMS.bootstrap(this.express);
+        this.express.use(CMS.build());
 
         this.server = http.createServer(this.express);
         this.server.listen(this.port, () => {

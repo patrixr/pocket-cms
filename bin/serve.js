@@ -13,7 +13,7 @@ let port    = 8000;
 
 logger.level = 'info';
 
-CMS.bootstrap(server);
+server.use(CMS.build())
 
 server.listen(port, () => {
     logger.info(`Server running on port ${port}`);

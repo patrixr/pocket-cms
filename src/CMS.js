@@ -3,6 +3,7 @@ import authentication   from "./authentication"
 import { Resource }     from "./Resource";
 import _                from "lodash"
 import defaultConfig    from "./utils/config"
+import express          from 'express';
 
 /**
  * CMS main class
@@ -67,11 +68,11 @@ class CMS {
     /**
      * Sets up the routes
      * 
-     * @returns {CMS} cms
-     * @param {Express} app 
+     * @returns {Express} app an express app
      * @memberof CMS
      */
-    bootstrap(app) {
+    build() {
+        let app = express();
 
         // Adding users in for admin panel access
         app.use("/users", authentication());
@@ -79,7 +80,7 @@ class CMS {
         // Auto-generated rest api
         app.use("/rest", rest());
 
-        return this;
+        return app;
     }
 
 }
