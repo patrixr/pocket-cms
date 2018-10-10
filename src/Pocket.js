@@ -6,11 +6,11 @@ import defaultConfig    from "./utils/config"
 import express          from 'express';
 
 /**
- * CMS main class
+ * Pocket main class
  *
- * @class CMS
+ * @class Pocket
  */
-class CMS {
+class Pocket {
 
     constructor(config) {
         // ---- Load schemas
@@ -85,4 +85,4 @@ class CMS {
 
 }
 
-export default new CMS();
+export default new Pocket();

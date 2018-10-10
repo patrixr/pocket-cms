@@ -1,5 +1,5 @@
 import express  from "express"
-import CMS      from "../src/CMS"
+import Pocket   from "../src/Pocket"
 import _        from "lodash"
 import http     from "http"
 
@@ -18,9 +18,9 @@ class TestServer {
 
         this.express = express();
 
-        CMS.newResource('posts', require('./samples/schemas/posts'));
+        Pocket.newResource('posts', require('./samples/schemas/posts'));
 
-        this.express.use(CMS.build());
+        this.express.use(Pocket.build());
 
         this.server = http.createServer(this.express);
         this.server.listen(this.port, () => {

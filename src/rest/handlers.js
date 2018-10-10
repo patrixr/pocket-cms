@@ -1,4 +1,4 @@
-import CMS          from "../CMS"
+import Pocket       from "../Pocket"
 import log4js       from "log4js"
 import _            from "lodash"
 import Busboy       from 'busboy'
@@ -38,7 +38,7 @@ function Handler(fn) {
  */
 export function preloadResource(req, res, next) {
     const resourceName  = req.params.resource;
-    const resource      = CMS.getResource(resourceName).withContext({ user: req.user, request: req })
+    const resource      = Pocket.getResource(resourceName).withContext({ user: req.user, request: req })
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);

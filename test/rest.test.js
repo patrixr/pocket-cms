@@ -6,7 +6,7 @@ import _                from "lodash"
 import config           from "../src/utils/config";
 import TestServer       from "./server"
 import { expect }       from "chai"
-import CMS              from "../src/CMS"
+import Pocket           from "../src/Pocket"
 import User             from '../src/User';
 
 describe("Rest", () => {
@@ -19,14 +19,14 @@ describe("Rest", () => {
 
     beforeEach((done) => {
         Q.all(
-            _.values(CMS.resources).map(r => r.drop())  
+            _.values(Pocket.resources).map(r => r.drop())  
         )
         .then(() => done());
     })
 
     after((done) => {
         TestServer.close();
-        _.values(CMS.resources)
+        _.values(Pocket.resources)
             .forEach(r => {
                 console.log(`\n\t# Dropping database ${r.name}.db`);
                 rimraf.sync(r.filename);
@@ -48,7 +48,7 @@ describe("Rest", () => {
     }
 
     async function createPost(userId) {
-        const posts = CMS.getResource('posts');
+        const posts = Pocket.getResource('posts');
         const newPost = await posts.create(sampleData, { userId });
         expect(newPost._id).to.exist;
         expect(newPost._id).to.not.be.null;
@@ -215,7 +215,7 @@ describe("Rest", () => {
         })
 
         it("Should delete an attachment from it's id", async () => {
-            const resource = CMS.getResource('posts');
+            const resource = Pocket.getResource('posts');
 
             // Create a post with an attachment
             let { _id } = await createPost();
