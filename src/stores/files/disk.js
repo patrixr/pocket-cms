@@ -13,17 +13,17 @@ import {
  * 
  * 
  * @export
- * @class LocalFileStore
+ * @class DiskStore
  */
-export class LocalFileStore {
+export class DiskStore {
 
     /**
-     * Creates an instance of LocalFileStore.
+     * Creates an instance of DiskStore.
      * 
      * @param {String} uploadFolder 
-     * @memberof LocalFileStore
+     * @memberof DiskStore
      */
-    constructor(uploadFolder) {
+    constructor({ uploadFolder }) {
         this.uploadFolder = uploadFolder;
         if (!fs.existsSync(this.uploadFolder)) {
             mkdirp.sync(this.uploadFolder);
@@ -43,10 +43,10 @@ export class LocalFileStore {
     }
 
     _getMetadata(file) {
-        const filePath  = path.join(this.uploadFolder, file);
-        const magic = new Magic(MAGIC_MIME_TYPE);
-        const getMimeType = promisify(magic.detectFile, magic);
-        const getStats = promisify(fs.stat, fs);
+        const filePath      = path.join(this.uploadFolder, file);
+        const magic         = new Magic(MAGIC_MIME_TYPE);
+        const getMimeType   = promisify(magic.detectFile, magic);
+        const getStats      = promisify(fs.stat, fs);
 
         return Q.all([
             getMimeType(filePath),
@@ -65,7 +65,7 @@ export class LocalFileStore {
      * 
      * @param {String} filename 
      * @param {Stream} istream 
-     * @memberof LocalFileStore
+     * @memberof DiskStore
      */
     saveStream(filename, istream) {
         return Q.Promise((resolve, reject) => {
@@ -74,7 +74,7 @@ export class LocalFileStore {
             let ostream         = fs.createWriteStream(outputFilepath);
 
             istream.pipe(ostream);
-            ostream.on('finish', () => {
+            ostream.on('finish', (d) => {
                 this._getMetadata(outputFilename)
                     .then(resolve)
                     .catch(reject);
@@ -88,7 +88,7 @@ export class LocalFileStore {
      * 
      * @param {String} filename 
      * @param {String} filepath 
-     * @memberof LocalFileStore
+     * @memberof DiskStore
      */
     saveFile(filename, filepath) {
         try {
@@ -119,7 +119,7 @@ export class LocalFileStore {
      * 
      * @param {String} filename 
      * @returns {Stream}
-     * @memberof LocalFileStore
+     * @memberof DiskStore
      */
     stream(filename) {
         let filepath  = path.join(this.uploadFolder, filename);
@@ -130,7 +130,7 @@ export class LocalFileStore {
      * 
      * 
      * @param {any} filename 
-     * @memberof LocalFileStore
+     * @memberof DiskStore
      */
     delete(filename) {
         return Q.Promise((resolve, reject) => {
@@ -143,4 +143,10 @@ export class LocalFileStore {
         });
     }
 
+    async ready() {
+        return true;
+    }
+
 }
+
+export default DiskStore;
