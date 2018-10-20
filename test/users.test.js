@@ -1,54 +1,57 @@
 import _                    from "lodash"
 import { expect }           from "chai"
 import Q                    from "q"
-import User                 from "../src/User"
 import config               from "../src/utils/config"
 import rimraf               from "rimraf"
+import Pocket               from '../src/Pocket';
 
 describe("Users", () => {
+
+    let pocket      = new Pocket();
+    let userManager = pocket.users;
 
     function randomName() {
         return "john-" + Math.random()
     }
 
     before((done) => {
-        User.create("john", "123456", User.Groups.ADMINS)
+        userManager.create("john", "123456", userManager.Groups.ADMINS)
             .then(() => done());
     });
 
     after((done) => {
-       rimraf(User.resource.filename, done);
+       rimraf(userManager.resource.filename, done);
     })
 
     it("Should create an admin user", async () => {
-        let user = await User.create("patrick", "123456", User.Groups.ADMINS)
+        let user = await userManager.create("patrick", "123456", userManager.Groups.ADMINS)
         expect(user).not.to.be.null;
         expect(user.groups.length).to.equal(1);
-        expect(user.groups[0]).to.equal(User.Groups.ADMINS);
+        expect(user.groups[0]).to.equal(userManager.Groups.ADMINS);
         expect(user.username).to.equal("patrick");
     })
 
     it("Should fail to create a user with an existing nickname", (done) => {
         expect(
-            User.create("john", "123456", User.Groups.ADMINS)
+            userManager.create("john", "123456", userManager.Groups.ADMINS)
         )
         .to.eventually.be.rejected
         .notify(done);
     })
 
     it("Should fail to create a user of an unknown group", (done) => {
-        expect(User.create("bob", "123456", "invalid_group"))
+        expect(userManager.create("bob", "123456", "invalid_group"))
             .to.eventually.be.rejected.notify(done);
     })
 
     it("Should not load a user with a wrong password", (done) => {
-        expect(User.auth("john", "wrongpassword"))
+        expect(userManager.auth("john", "wrongpassword"))
             .to.eventually.be.rejected
             .notify(done)
     })
 
     it("Should load a user with the correct password", (done) => {
-        expect(User.auth("john", "123456"))
+        expect(userManager.auth("john", "123456"))
             .to.eventually.be.fulfilled
             .notify(done)
     })
@@ -57,7 +60,7 @@ describe("Users", () => {
         let jwt = null;
         let expirationTimeout = config.session.expiresIn;
         config.session.expiresIn = 1; // 1 second
-        let promise = User.auth("john", "123456")
+        let promise = userManager.auth("john", "123456")
             .then(user => {
                 jwt = user.jwt();
                 config.session.expiresIn = expirationTimeout; // restore
@@ -65,7 +68,7 @@ describe("Users", () => {
             })
             .then(() => {
                 // jwt is now expired
-                return User.fromJWT(jwt);
+                return userManager.fromJWT(jwt);
             });
 
         expect(promise)

@@ -6,27 +6,32 @@ import _                from "lodash"
 import config           from "../src/utils/config";
 import TestServer       from "./server"
 import { expect }       from "chai"
-import Pocket           from "../src/Pocket"
-import User             from '../src/User';
 
 describe("Rest", () => {
+
+    let pocket        = null;
+    let userManager   = null;
 
     // ---- Setup
 
     before((done) => {
-        TestServer.run(done);
+        TestServer.run(() => {
+            pocket = TestServer.pocket;
+            userManager = TestServer.pocket.users;
+            done();
+        });
     })
 
     beforeEach((done) => {
         Q.all(
-            _.values(Pocket.resources).map(r => r.drop())  
+            _.values(pocket.resources).map(r => r.drop())  
         )
         .then(() => done());
     })
 
     after((done) => {
         TestServer.close();
-        _.values(Pocket.resources)
+        _.values(pocket.resources)
             .forEach(r => {
                 console.log(`\n\t# Dropping database ${r.name}.db`);
                 rimraf.sync(r.filename);
@@ -48,7 +53,7 @@ describe("Rest", () => {
     }
 
     async function createPost(userId) {
-        const posts = Pocket.getResource('posts');
+        const posts = pocket.resource('posts');
         const newPost = await posts.create(sampleData, { userId });
         expect(newPost._id).to.exist;
         expect(newPost._id).to.not.be.null;
@@ -215,7 +220,7 @@ describe("Rest", () => {
         })
 
         it("Should delete an attachment from it's id", async () => {
-            const resource = Pocket.getResource('posts');
+            const resource = pocket.resource('posts');
 
             // Create a post with an attachment
             let { _id } = await createPost();
@@ -253,7 +258,7 @@ describe("Rest", () => {
     describe("Authentication api /users", () => {
 
         afterEach((done) => {
-            User.resource.drop().then(() => {
+            userManager.resource.drop().then(() => {
                 done();
             });
         })
@@ -282,7 +287,7 @@ describe("Rest", () => {
         });
 
         it("Should sign in and receive an authentication token", async () => {
-            await User.create("admin", "password", [ "admins" ]);
+            await userManager.create("admin", "password", [ "admins" ]);
             const { body } = 
                 await request(TestServer.baseUrl)
                     .post("/users/login")
@@ -303,7 +308,7 @@ describe("Rest", () => {
         });
 
         it("Should allow users to refresh their jwt token", async () => {
-            await User.create("admin", "password", [ "admins" ]);
+            await userManager.create("admin", "password", [ "admins" ]);
             const loginResponse = 
                 await request(TestServer.baseUrl)
                     .post("/users/login")
@@ -329,7 +334,7 @@ describe("Rest", () => {
         });
 
         it("Should not allow registering an admin if there is already one", async () => {
-            await User.create("admin1", "password", [ "admins" ]);
+            await userManager.create("admin1", "password", [ "admins" ]);
             await request(TestServer.baseUrl)
                 .post("/users/signup")
                 .send({
@@ -361,7 +366,7 @@ describe("Rest", () => {
         });
 
         it("Should prevent registering a user with an existing username", async () => {
-            await User.create("user1", "password", [ "admins" ]);
+            await userManager.create("user1", "password", [ "admins" ]);
             await request(TestServer.baseUrl)
                 .post("/users/signup")
                 .send({
@@ -379,17 +384,17 @@ describe("Rest", () => {
         beforeEach((done) => {
             config.testing.disableAuthentication = false;
             Q.all([
-                User.create("adminUser", "password", [ "admins" ]),
-                User.create("noPermissionUser", "password", [ "users" ]),
-                User.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
-                User.create("createUser", "password", [ "users" ], { "posts": [ "create" ] })
+                userManager.create("adminUser", "password", [ "admins" ]),
+                userManager.create("noPermissionUser", "password", [ "users" ]),
+                userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
+                userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] })
             ])
             .then(() => done())
             .catch(e => console.log(e));
         })
 
         afterEach((done) => {
-            User.resource.drop().then(() => {
+            userManager.resource.drop().then(() => {
                 config.testing.disableAuthentication = true;
                 done();
             });
@@ -480,7 +485,7 @@ describe("Rest", () => {
 
         beforeEach((done) => {
             config.testing.disableAuthentication = false;
-            User.create("testuser", "password", [ "admins" ])
+            userManager.create("testuser", "password", [ "admins" ])
                 .then((user) => {
                     uid = user.id;
                     done()
@@ -489,7 +494,7 @@ describe("Rest", () => {
         })
 
         afterEach((done) => {
-            User.resource.drop().then(() => {
+            userManager.resource.drop().then(() => {
                 config.testing.disableAuthentication = true;
                 done();
             });

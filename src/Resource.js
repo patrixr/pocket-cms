@@ -1,15 +1,10 @@
-import stores           from "./stores"
 import path             from "path"
-import config           from "./utils/config"
 import env              from "./utils/env"
-import Q                from "q"
 import _                from "lodash"
-import log4js           from "log4js"
-import { promisify , asyncEach}    from "./utils/helpers"
+import { asyncEach }    from "./utils/helpers"
 import { Error }        from "./utils/errors"
 import { Validator }    from "jsonschema"
 
-const logger = log4js.getLogger();
 const reservedProperties = [ 
     "_id",
     "_createdBy",
@@ -26,25 +21,24 @@ const reservedProperties = [
  */
 export class Resource {
 
-    constructor(name, schema, context = {}) {
-        this.name = name;
-        this.schema = schema;
-        this.context = context;
+    constructor(name, schema, pocket, context = {}) {
+        this.name       = name;
+        this.schema     = schema;
+        this.context    = context;
+        this.pocket     = pocket;
+        this.config     = pocket.config();
 
         // ---- Stores
-        this.filename       = path.join(config.datastore.options.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
-        this.hooks          = {
-            before: {},
-            after: {}
-        };
-    }
+        this.filename       = path.join(this.config.datastore.options.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
+        this.store          = pocket.jsonStore;
+        this.attachments    = pocket.fileStore;
+        
+        this.clearHooks();
 
-    get store() {
-        return stores.getStore(this.name, this.getUniqueKeys());
-    }
-
-    get attachments() {
-        return stores.getFileStore();
+        // ---- Unique Fields
+        _.each(this.getUniqueKeys(), (key) => {
+            this.store.setUniqueField(name, key);
+        })
     }
 
     // ---- Helpers
@@ -90,7 +84,7 @@ export class Resource {
      * @memberof Resource
      */
     withContext(ctx) {
-        let clone = new Resource(this.name, this.schema, ctx);
+        let clone = new Resource(this.name, this.schema, this.pocket, ctx);
         _.keys(this.hooks, (key) => {
             _.each(this.hooks[key], (handlers, method) => {
                 clone.hooks[key][method] = handlers.map(_.identity);
@@ -121,6 +115,8 @@ export class Resource {
      * @memberof Resource
      */
     async findOne(query = {}, options = {}) {
+        await this.pocket.ready();
+
         let records = await this.find(query, _.extend({}, options,{ pageSize: 1 }));
         return records[0] || null;
     }
@@ -134,20 +130,20 @@ export class Resource {
      * @memberof Resource
      */
     async find(query = {}, opts = {}) {
+        await this.pocket.ready();
+
         await this.runHooks({ query, options : opts }).before('find');
 
-        let transaction = this.store.find(query);
-
+        let params = {};
         if (_.isNumber(opts.pageSize)) {
             if (_.isNumber(opts.page)) {
                 let page = opts.page > 0 ? opts.page - 1 : 0; // Pages are 1 indexed
-                transaction = transaction.skip(page * opts.pageSize);
+                params.skip = page * opts.pageSize;
             }
-            transaction = transaction.limit(opts.pageSize);
+            params.limit = opts.pageSize;
         }
 
-        let exec = promisify(transaction.exec, transaction);
-        let records = await exec();
+        let records = await this.store.find(this.name, query, params)
         
         await this.runHooks({ records, query, options : opts }).after('find');
          
@@ -162,25 +158,24 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    create(payload, opts = {}) {
-        const { userId = null } = opts;
-        return this.validate(payload)
-            .then(async (data) => {
-               await this.runHooks({ payload: data }).before('create', 'save');
-               return data;
-            })
-            .then((data) => {
-                let insert = promisify(this.store.insert, this.store);
-                data._createdAt = Date.now();
-                data._updatedAt = Date.now();
-                data._attachments = [];
-                data._createdBy = userId;
-                return insert(data);
-            })
-            .then(async (record) => {
-                await this.runHooks({ record }).after('create', 'save');
-                return record;
-            })
+    async create(payload, opts = {}) {
+        await this.pocket.ready();
+
+        let userId  = opts.userId || (this.context.user && this.context.user.id);
+        let data    = await this.validate(payload);
+
+        await this.runHooks({ payload: data }).before('create', 'save');
+
+        data._createdAt = Date.now();
+        data._updatedAt = data._createdAt 
+        data._attachments = [];
+        data._createdBy = userId || null;
+
+        const record = await this.store.insert(this.name, data);
+
+        await this.runHooks({ record }).after('create', 'save');
+
+        return record;
     }
 
     /**
@@ -192,17 +187,15 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    mergeOne(id, payload, opts = {}) {
+    async mergeOne(id, payload, opts = {}) {
         let { skipValidation } = opts;
- 
-        let validate = skipValidation ?
-            Q.resolve(payload)
-            : this.validate(payload, { isUpdate: true });
+        let data = payload;
 
-        return validate
-            .then((data) => {
-                return this.updateOne(id, { $set: data });
-            });
+        if (!skipValidation) {
+            data = await this.validate(payload, { isUpdate: true });
+        }
+
+        return this.updateOne(id, { $set: data });
     }
 
     /**
@@ -213,23 +206,18 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    async update(query, operations, opts = {}) {
-        let deferred = Q.defer();
-        let multi    = !!opts.multi;
+    async update(query, operations, options = {}) {
+        await this.pocket.ready();
+
+        const opts = _.extend({ returnUpdatedDocs : true, multi: true }, options);
 
         await this.runHooks({ query, operations }).before('update', 'save');
 
-        this.store.update(query, operations, { returnUpdatedDocs: true, multi }, async (err, count, result) => {
-            if (err) {
-                deferred.reject(err);
-            } else {
-                const records = _.isArray(result) ? result : [result];
-                await this.runHooks({ query, operations, records }).after('update', 'save');
-                deferred.resolve(result);
-            }
-        });
+        const result    = await this.store.update(this.name, query, operations, opts);
+        const records   = _.isArray(result) ? result : [result];
+        await this.runHooks({ query, operations, records }).after('update', 'save');
 
-        return deferred.promise;
+        return result;
     }
 
     /**
@@ -263,12 +251,13 @@ export class Resource {
      * @memberof Resource
      */
     async remove(query, options = { multi: true }) {
+        await this.pocket.ready();
+
         const multi = !!options.multi;
-        const remove = promisify(this.store.remove, this.store);
 
         await this.runHooks({ query, options }).before('remove');
 
-        let removedCount = await remove(query, { multi });
+        let removedCount = await this.store.remove(this.name, query, { multi });
 
         await this.runHooks({ query, options, removedCount }).after('remove');
 
@@ -281,24 +270,14 @@ export class Resource {
      * @returns
      * @memberof Resource
      */
-    drop() {
+    async drop() {
         if (env() !== "test") {
             throw "Dropping a database is only allowed in test mode"
         }
 
-        let deferred = Q.defer();
+        await this.pocket.ready();
 
-        this.store.remove({ }, { multi: true }, (err, numRemoved) => {
-            this.store.loadDatabase(function (err) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve();
-                }
-            });
-        });
-
-        return deferred.promise;
+        return await this.store.remove(this.name, { }, { multi: true });
     }
 
     /**
@@ -310,13 +289,15 @@ export class Resource {
      * @memberof Resource
      */
     async attach(recordId, name, file) {
-        let record        = await this.get(recordId);
-        let result        = await this.attachments.save(name, file);
+        await this.pocket.ready();
 
+        let result = await this.attachments.save(name, file);
+        
         let att = _.extend({}, result, {
             name:   name,
             id:     result.file
         });
+
         return this.updateOne(recordId, { $push: { _attachments: att } });
     }
 
@@ -327,16 +308,18 @@ export class Resource {
      * @param {String} attachmentId 
      */
     async deleteAttachment(recordId, attachmentId) {
+        await this.pocket.ready();
+
         let record      = await this.get(recordId);
 
         if (!record) {
-            return Q.reject(new Error(400, "Resource not found"));
+            throw new Error(400, "Resource not found");
         }
 
         let attachments = record._attachments || [];
 
         if (!_.find(attachments, ['id', attachmentId])) {
-            return Q.resolve(record);
+            return record;
         }
 
         await this.attachments.delete(attachmentId);
@@ -387,6 +370,13 @@ export class Resource {
                 for (let method of methods)
                     await run(this.hooks.before[method] || []); 
             }
+        };
+    }
+
+    clearHooks() {
+        this.hooks = {
+            before: {},
+            after: {}
         };
     }
 

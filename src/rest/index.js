@@ -3,10 +3,9 @@ import * as handlers    from "./handlers"
 import bodyParser       from "body-parser"
 import env              from "../utils/env"
 import config           from "../utils/config"
-import { FORBIDDEN , UNAUTHORIZED}    from "../utils/errors"
-import User             from '../User'
-import session          from "../authentication/session"
-
+import { 
+    FORBIDDEN, 
+    UNAUTHORIZED}       from "../utils/errors"
 
 const ACTION_MAP = {
     POST: 'create',
@@ -15,14 +14,15 @@ const ACTION_MAP = {
     PUT: 'update'
 };
 
-export default function () {
+export default function (pocket) {
     let router = Router();
     
     const prefix = (endpoint) => `(/users/:userId)?${endpoint}`
 
     router.use(bodyParser.json());
-    router.use(session);
     router.use('(/users/:userId)?/:resource', (req, res, next) => {
+
+        req.pocket = pocket;
 
         if (env() === "test" && config.testing.disableAuthentication) {
             return next();
@@ -32,7 +32,7 @@ export default function () {
             return UNAUTHORIZED.send(res);
         }
 
-        if (User.isAdmin(req.user)) {
+        if (pocket.users.isAdmin(req.user)) {
             return next();
         }
 

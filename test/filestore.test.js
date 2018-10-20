@@ -5,7 +5,8 @@ import rimraf           from "rimraf"
 import _                from "lodash"
 import Q                from "q"
 import { expect }       from "chai"
-import {LocalFileStore} from '../src/stores/files/LocalFileStore';
+import DiskStore        from '../src/stores/files/disk';
+import Pocket           from '../src/Pocket';
 
 const uploadFolder = config.filestore.options.uploadFolder;
 
@@ -30,7 +31,7 @@ describe("Filestore", () => {
 
 
     beforeEach((done) => {
-        filestore = new LocalFileStore(uploadFolder);
+        filestore = new DiskStore({ uploadFolder });
         done();
     })
 

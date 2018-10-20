@@ -1,28 +1,29 @@
 import { Error, UNAUTHORIZED } from '../utils/errors';
-import User from '../User';
+import User from '../Users';
 
 /**
  * Express middleware to setup user session based on the auth token
  *
  * @export
- * @param {*} req
- * @param {*} res
- * @param {*} next
  */
-export default function (req, res, next) {
-    const auth = req.get('authorization');
-    const rexp = /^Bearer .+$/i;
+export default function (pocket) {
+    const userManager = pocket.users;
 
-    if (!auth || !rexp.test(auth)) {
-        return next();
+    return function (req, res, next) {
+        const auth = req.get('authorization');
+        const rexp = /^Bearer .+$/i;
+
+        if (!auth || !rexp.test(auth)) {
+            return next();
+        }
+
+        const token = auth.replace(/^Bearer /i, "");
+
+        userManager.fromJWT(token)
+            .then(user => {
+                req.user = user;
+                next();
+            })
+            .catch(() => next());
     }
-
-    const token = auth.replace(/^Bearer /i, "");
-
-    User.fromJWT(token)
-        .then(user => {
-            req.user = user;
-            next();
-        })
-        .catch(() => next());
 }

@@ -4,32 +4,35 @@ import path             from "path"
 import rimraf           from "rimraf"
 import _                from "lodash"
 import { expect }       from "chai"
+import Pocket           from '../src/Pocket';
 
 describe("Resource", () => {
 
+    let pocket = null;
     let resource = null;
-    let schema = {
-        "id": "Person",
-        "type": "object",
-        "properties": {
-            "firstname": {"type": "string"},
-            "lastname": {"type": "string"},
-            "age": {"type": "number"},
-            "username": {
-                "type": "string",
-                "unique": true
-            }
-        },
-        "additionalProperties": false
-    };
 
-    beforeEach((done) => {
-        resource = new Resource(Date.now() + "_test", schema);
+    before((done) => {
+        let schema = {
+            "id": "Person",
+            "type": "object",
+            "properties": {
+                "firstname": {"type": "string"},
+                "lastname": {"type": "string"},
+                "age": {"type": "number"},
+                "username": {
+                    "type": "string",
+                    "unique": true
+                }
+            },
+            "additionalProperties": false
+        };
+        pocket = new Pocket();
+        resource = pocket.resource("person", schema);
         done();
-    })
+    });
 
     afterEach((done) => {
-        rimraf(resource.filename, done);
+        resource.drop().then(() => done());
     })
 
     it("Should save a record to disk", (done) => {
@@ -95,27 +98,21 @@ describe("Resource", () => {
             .notify(done);
     })
     
-    it("Should attach a file to a record", (done) => {
-        resource.create({ firstname: "John", lastname: "Smith" })
-            .then((record) => resource.get(record._id))
-            .then((record) => {
-                let file = path.join(__dirname, 'samples', 'sample_image.png');
-                return resource.attach(record._id, 'myimage', file);
-            })
-            .then((r) => {
-                expect(r).to.be.an('object');
-                expect(r.lastname).to.equal("Smith");
-                expect(r._attachments).to.be.an('array');
-                expect(r._attachments).to.be.of.length(1);
+    it("Should attach a file to a record", async () => {
+        const record        = await resource.create({ firstname: "John", lastname: "Smith" })
+        const file          = path.join(__dirname, 'samples', 'sample_image.png');
+        const updatedRecord = await resource.attach(record._id, 'myimage', file);
 
-                const att = r._attachments[0];
-                expect(att).not.to.be.undefined;
-                expect(att.name).to.equal('myimage');
-                expect(att.file).to.be.a('string');
-                expect(att.id).to.be.a('string');
-            })
-            .should.be.fulfilled
-            .notify(done);
+        expect(updatedRecord).to.be.an('object');
+        expect(updatedRecord.lastname).to.equal("Smith");
+        expect(updatedRecord._attachments).to.be.an('array');
+        expect(updatedRecord._attachments).to.be.of.length(1);
+
+        const att = updatedRecord._attachments[0];
+        expect(att).not.to.be.undefined;
+        expect(att.name).to.equal('myimage');
+        expect(att.file).to.be.a('string');
+        expect(att.id).to.be.a('string');
     })
 
     it("Should fail to attach a bad file to a record", (done) => {
@@ -194,6 +191,11 @@ describe("Resource", () => {
     })
 
     describe("Hooks", () => {
+
+        afterEach((done) => {
+            resource.clearHooks();
+            done();
+        });
 
         it("Should allow before and after find hook", async () => {
             let beforeTriggered = false;

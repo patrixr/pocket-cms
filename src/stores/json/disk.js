@@ -52,9 +52,11 @@ export class DiskAdapter extends BaseAdapter {
         return insert(payload);
     }
 
-    async update (collection, query, operations, options = { returnUpdatedDocs: true, multi: true }) {
+    async update (collection, query, operations, opts = {}) {
         let db          = this._getDB(collection);
         let deferred    = Q.defer();
+
+        const options = _.extend({ returnUpdatedDocs: true, multi: true }, opts);
 
         db.update(query, operations, options, (err, count, result) => {
             if (err) {

@@ -1,8 +1,7 @@
 import { Router }       from "express"
 import bodyParser       from "body-parser"
-import User             from "../User"
-import authenticate     from "./session"
 import _                from "lodash"
+import session          from "./session"
 import { 
     Error, 
     INVALID_USERNAME_PW, 
@@ -13,8 +12,11 @@ const DEFAULT_PERMISSIONS = {
     READ_ONLY: { "*" : [ 'read' ] }
 };
 
-export default function () {
-    let router = Router();
+export default function (pocket) {
+    let router          = Router();
+    let userManager     = pocket.users;
+    let userGroups      = userManager.Groups;
+    let authenticate    = session(pocket);
 
     router.use(bodyParser.json());
 
@@ -24,16 +26,16 @@ export default function () {
                 throw INVALID_USERNAME_PW;
             }
             
-            const groups = req.body.groups || [ User.Groups.USERS ];
-            if (_.find(groups, grp => User.isAdminGroup(grp))) {
+            const groups = req.body.groups || [ userGroups.USERS ];
+            if (_.find(groups, grp => pocket.users.isAdminGroup(grp))) {
                 // We allow the very first admin to register
-                let admins = await User.getAdmins();
+                let admins = await userManager.getAdmins();
                 if (admins.length > 0) {
                     throw UNAUTHORIZED;
                 }
             }
 
-            let user = await User.create(req.body.username, req.body.password, groups, DEFAULT_PERMISSIONS.READ_ONLY);
+            let user = await userManager.create(req.body.username, req.body.password, groups, DEFAULT_PERMISSIONS.READ_ONLY);
             res.json({
                 authenticated: true,
                 token: user.jwt(),
@@ -53,7 +55,7 @@ export default function () {
 
     router.post("/login", async (req, res) => {
         try {
-            const user = await User.auth(req.body.username, req.body.password);
+            const user = await userManager.auth(req.body.username, req.body.password);
             res.json({
                 authenticated: true,
                 token: user.jwt(),

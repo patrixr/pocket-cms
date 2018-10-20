@@ -1,4 +1,3 @@
-import Pocket       from "../Pocket"
 import log4js       from "log4js"
 import _            from "lodash"
 import Busboy       from 'busboy'
@@ -37,8 +36,9 @@ function Handler(fn) {
  * @param {*} next 
  */
 export function preloadResource(req, res, next) {
+    const pocket        = req.pocket;
     const resourceName  = req.params.resource;
-    const resource      = Pocket.getResource(resourceName).withContext({ user: req.user, request: req })
+    const resource      = pocket.resource(resourceName).withContext({ user: req.user, request: req })
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);

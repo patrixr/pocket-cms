@@ -18,10 +18,11 @@ class TestServer {
 
         this.express = express();
 
-        Pocket.newResource('posts', require('./samples/schemas/posts'));
+        this.pocket = new Pocket();
 
-        this.express.use(Pocket.build());
+        this.pocket.resource('posts', require('./samples/schemas/posts'));
 
+        this.express.use(this.pocket.middleware());
         this.server = http.createServer(this.express);
         this.server.listen(this.port, () => {
             console.log("\t Test server running on port " + this.port);
