@@ -1,6 +1,3 @@
-import { Error, UNAUTHORIZED } from '../utils/errors';
-import User from '../Users';
-
 /**
  * Express middleware to setup user session based on the auth token
  *
