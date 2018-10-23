@@ -29,16 +29,17 @@ export class Resource {
         this.config     = pocket.config();
 
         // ---- Stores
-        this.filename       = path.join(this.config.datastore.options.dataFolder, name + ".db"); //@TODO remove filename, currently used in tests
         this.store          = pocket.jsonStore;
         this.attachments    = pocket.fileStore;
         
         this.clearHooks();
 
         // ---- Unique Fields
-        _.each(this.getUniqueKeys(), (key) => {
-            this.store.setUniqueField(name, key);
-        })
+        this.store.ready().then(() => {
+            _.each(this.getUniqueKeys(), (key) => {
+                this.store.setUniqueField(name, key);
+            })
+        });
     }
 
     // ---- Helpers

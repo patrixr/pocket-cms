@@ -24,6 +24,10 @@ export class BaseAdapter {
         throw 'Not Implemented';
     }
 
+    async close() {
+        throw 'Not Implemented'
+    }
+
     async ready () {
         throw 'Not Implemented'
     }

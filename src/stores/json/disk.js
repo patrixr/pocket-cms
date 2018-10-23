@@ -76,6 +76,10 @@ export class DiskAdapter extends BaseAdapter {
         return await remove(query, options);
     }
 
+    async close() {
+        return true;
+    }
+
     async ready () {
         return true;
     }

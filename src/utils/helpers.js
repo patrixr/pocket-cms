@@ -68,3 +68,13 @@ export function stringFromFile(file, defaultValue) {
     fs.writeFileSync(file, defaultValue);
     return defaultValue;
 }
+
+/**
+ * Returns true if node is running in Travis
+ *
+ * @export
+ * @returns {boolean}
+ */
+export function isCI() {
+    return 'TRAVIS' in process.env;
+}

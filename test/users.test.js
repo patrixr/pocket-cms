@@ -20,7 +20,7 @@ describe("Users", () => {
     });
 
     after((done) => {
-       rimraf(userManager.resource.filename, done);
+        userManager.resource.drop().then(() => done());
     })
 
     it("Should create an admin user", async () => {

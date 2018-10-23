@@ -22,7 +22,7 @@ describe("Rest", () => {
         });
     })
 
-    beforeEach((done) => {
+    afterEach((done) => {
         Q.all(
             _.values(pocket.resources).map(r => r.drop())  
         )
@@ -31,11 +31,6 @@ describe("Rest", () => {
 
     after((done) => {
         TestServer.close();
-        _.values(pocket.resources)
-            .forEach(r => {
-                console.log(`\n\t# Dropping database ${r.name}.db`);
-                rimraf.sync(r.filename);
-            });
         rimraf.sync(config.filestore.options.uploadFolder);
         done();
     })
@@ -389,8 +384,7 @@ describe("Rest", () => {
                 userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
                 userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] })
             ])
-            .then(() => done())
-            .catch(e => console.log(e));
+            .then(() => done());
         })
 
         afterEach((done) => {
@@ -489,8 +483,7 @@ describe("Rest", () => {
                 .then((user) => {
                     uid = user.id;
                     done()
-                })
-                .catch(e => console.log(e));
+                });
         })
 
         afterEach((done) => {
