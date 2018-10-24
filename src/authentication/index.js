@@ -12,6 +12,13 @@ const DEFAULT_PERMISSIONS = {
     READ_ONLY: { "*" : [ 'read' ] }
 };
 
+/**
+ * Authentication rest api
+ *
+ * @export
+ * @param {*} pocket
+ * @returns
+ */
 export default function (pocket) {
     let router          = Router();
     let userManager     = pocket.users;

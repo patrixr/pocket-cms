@@ -13,7 +13,15 @@ let port    = 8000;
 
 logger.level = 'info';
 
-const pocket = new Pocket();
+const pocket = new Pocket({
+    datastore: {
+        adapter: 'mongo',
+        options: {
+            dbName: 'pocket_dev',
+            url: 'localhost:27017'
+        }
+    }
+})
 
 server.use(pocket.middleware());
 
