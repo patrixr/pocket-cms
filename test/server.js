@@ -1,5 +1,5 @@
 import express  from "express"
-import Pocket   from "../src/Pocket"
+import Pocket   from "../src/pocket"
 import _        from "lodash"
 import http     from "http"
 

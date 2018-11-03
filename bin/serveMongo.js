@@ -5,7 +5,7 @@ require('babel-register')({
 
 var express = require("express");
 var log4js  = require("log4js");
-var Pocket  = require("../src/Pocket").default;
+var Pocket  = require("../src/pocket").default;
 
 let logger  = log4js.getLogger();
 let server  = express();

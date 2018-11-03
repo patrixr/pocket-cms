@@ -6,7 +6,7 @@ import _                from "lodash"
 import Q                from "q"
 import { expect }       from "chai"
 import DiskStore        from '../src/stores/files/disk';
-import Pocket           from '../src/Pocket';
+import Pocket           from '../src/pocket';
 
 const uploadFolder = config.filestore.options.uploadFolder;
 

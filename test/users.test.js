@@ -2,8 +2,7 @@ import _                    from "lodash"
 import { expect }           from "chai"
 import Q                    from "q"
 import config               from "../src/utils/config"
-import rimraf               from "rimraf"
-import Pocket               from '../src/Pocket';
+import Pocket               from '../src/pocket';
 
 describe("Users", () => {
 
