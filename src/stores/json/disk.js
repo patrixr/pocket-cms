@@ -3,7 +3,7 @@ import Q                from 'q'
 import _                from 'lodash'
 import nedb             from "nedb"
 import Cache            from "../../utils/cache"
-import { BaseAdapter }  from './Base'
+import { BaseAdapter }  from './base'
 import { promisify }    from "../../utils/helpers"
 
 export class DiskAdapter extends BaseAdapter {

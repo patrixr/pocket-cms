@@ -1,5 +1,5 @@
 import { MongoClient }  from 'mongodb'
-import { BaseAdapter }  from './Base'
+import { BaseAdapter }  from './base'
 import assert           from 'assert'
 import log4js           from 'log4js' 
 import Q                from 'q'
