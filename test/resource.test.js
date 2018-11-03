@@ -2,7 +2,7 @@ import Mongod           from "mongod"
 import path             from "path"
 import _                from "lodash"
 import { expect }       from "chai"
-import Pocket           from '../src/Pocket';
+import Pocket           from '../src/pocket';
 import { isCI }         from "../src/utils/helpers";
 
 let mongoServer = null;
