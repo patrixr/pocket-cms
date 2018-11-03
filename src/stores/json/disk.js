@@ -21,6 +21,13 @@ export class DiskAdapter extends BaseAdapter {
         return this.cache.resolve(name, () => new nedb({ filename: this._filepath(name), autoload: true }));
     }
 
+    /**
+     * Make specified field unique
+     *
+     * @param {string} collection
+     * @param {string} fieldName
+     * @memberof BaseAdapter
+     */
     setUniqueField(collection, fieldName) {
         const db = this._getDB(collection);
         db.ensureIndex({ fieldName, unique: true }, (err) => {
@@ -30,6 +37,17 @@ export class DiskAdapter extends BaseAdapter {
         });
     }
 
+    /**
+     * Finds items based on the query
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} opts
+     * @param {number} opts.skip 
+     * @param {number} opts.limit
+     * @returns
+     * @memberof DiskAdapter
+     */
     async find (collection, query, opts) {
         let db          = this._getDB(collection);
         let transaction = db.find(query);
@@ -45,6 +63,12 @@ export class DiskAdapter extends BaseAdapter {
         return exec();
     }
 
+    /**
+     * Inserts a record into the collection
+     * 
+     * @param {string} collection 
+     * @param {object} payload 
+     */
     async insert (collection, payload) {
         let db      = this._getDB(collection);
         let insert  = promisify(db.insert, db);
@@ -52,6 +76,15 @@ export class DiskAdapter extends BaseAdapter {
         return insert(payload);
     }
 
+    /**
+     * Updates records specified by the query
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} operations 
+     * @param {object} opts 
+     * @param {boolean} opts.multi
+     */
     async update (collection, query, operations, opts = {}) {
         let db          = this._getDB(collection);
         let deferred    = Q.defer();
@@ -69,6 +102,14 @@ export class DiskAdapter extends BaseAdapter {
         return deferred.promise;
     }
 
+    /**
+     * Remove one or multiple records
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} options 
+     * @param {object} options.multi
+     */
     async remove (collection, query, options = { multi: true }) {
         let db      = this._getDB(collection);
         let remove  = promisify(db.remove, db);
@@ -76,10 +117,16 @@ export class DiskAdapter extends BaseAdapter {
         return await remove(query, options);
     }
 
+    /**
+     * Closes the connection
+     */
     async close() {
         return true;
     }
 
+    /**
+     * Resolves once the adapter has been initialized
+     */
     async ready () {
         return true;
     }

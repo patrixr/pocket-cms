@@ -4,30 +4,79 @@ export class BaseAdapter {
         this.config = config;
     }
 
-    setUniqueField(fieldName) {
+    /**
+     * Make specified field unique
+     *
+     * @param {string} collection
+     * @param {string} fieldName
+     * @memberof BaseAdapter
+     */
+    setUniqueField(collection, fieldName) {
         throw 'Not Implemented'
     }
 
-    async find (collection, query) {
+    /**
+     * Finds items based on the query
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} opts
+     * @param {number} opts.skip 
+     * @param {number} opts.limit
+     * @returns
+     * @memberof DiskAdapter
+     */
+    async find (collection, query, opts) {
         throw 'Not Implemented';
     }
 
+    /**
+     * Inserts a record into the collection
+     * 
+     * @param {string} collection 
+     * @param {object} payload 
+     */
     async insert (collection, payload) {
         throw 'Not Implemented';
     }
 
-    async update (collection, query, operations, options) {
+    /**
+     * Updates records specified by the query
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} operations 
+     * @param {object} opts 
+     * @param {boolean} opts.multi
+     */
+    async update (collection, query, operations, opts) {
         throw 'Not Implemented';
     }
 
+    /**
+     * Remove one or multiple records
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} options 
+     * @param {object} options.multi
+     */
     async remove (collection, query, options) {
         throw 'Not Implemented';
     }
 
+    /**
+     * Closes the connection
+     */
     async close() {
         throw 'Not Implemented'
     }
 
+    /**
+     * Resolves once the adapter has been initialized
+     *
+     * @memberof BaseAdapter
+     */
     async ready () {
         throw 'Not Implemented'
     }

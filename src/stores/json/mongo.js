@@ -38,11 +38,29 @@ export class MongoAdapter extends BaseAdapter {
         this.initialization = deferred.promise;
     }
 
+    /**
+     * Make specified field unique
+     *
+     * @param {string} collection
+     * @param {string} fieldName
+     * @memberof BaseAdapter
+     */
     setUniqueField(collection, fieldName) {
         const store = this.db.collection(collection);
         store.createIndex({ [fieldName] : 1 },  { unique: true });
     }
 
+    /**
+     * Finds items based on the query
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} opts
+     * @param {number} opts.skip 
+     * @param {number} opts.limit
+     * @returns
+     * @memberof DiskAdapter
+     */
     async find(collection, query, opts = {}) {
         let store       = this.db.collection(collection);
         let transaction = store.find(query);
@@ -57,6 +75,12 @@ export class MongoAdapter extends BaseAdapter {
         return await transaction.toArray();
     }
 
+    /**
+     * Inserts a record into the collection
+     * 
+     * @param {string} collection 
+     * @param {object} payload 
+     */
     async insert (collection, payload) {
         let store   = this.db.collection(collection);
         let result  = await store.insertOne(payload);
@@ -64,6 +88,15 @@ export class MongoAdapter extends BaseAdapter {
         return result.ops[0];
     }
 
+    /**
+     * Updates records specified by the query
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} operations 
+     * @param {object} opts 
+     * @param {boolean} opts.multi
+     */
     async update (collection, query, operations, opts = {}) {
         const store         = this.db.collection(collection);
         const options       = _.extend({ returnUpdatedDocs: true, multi: true }, opts);
@@ -79,6 +112,14 @@ export class MongoAdapter extends BaseAdapter {
         return result.value;
     }
 
+    /**
+     * Remove one or multiple records
+     * 
+     * @param {string} collection 
+     * @param {object} query 
+     * @param {object} options 
+     * @param {object} options.multi
+     */
     async remove (collection, query, options = { multi: true }) {
         let store   = this.db.collection(collection);
         let remove  = promisify(options.multi ? store.deleteMany : store.deleteOne, store);
@@ -87,10 +128,16 @@ export class MongoAdapter extends BaseAdapter {
         return result.deletedCount;
     }
 
+    /**
+     * Closes the connection
+     */
     async close() {
         this.client.close();
     }
 
+    /**
+     * Resolves once the adapter has been initialized
+     */
     async ready () {
         return this.initialization;
     }

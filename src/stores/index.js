@@ -3,7 +3,7 @@ import FileStore        from "./files/disk"
 import DiskAdapter      from "./json/disk";
 import MongoAdapter     from './json/mongo';
 
-let adapters = {
+const adapters = {
     'disk': DiskAdapter,
     'mongo': MongoAdapter
 };
