@@ -34,6 +34,10 @@ class Pocket {
 
         // --- Setup user manager
         this.users = new UserManager(this);
+
+        const onShutdown = () => this.close();
+        process.on('SIGTERM', onShutdown);
+        process.on('SIGINT', onShutdown);
     }
 
 
@@ -102,6 +106,17 @@ class Pocket {
      */
     ready() {
         return this.initialization;
+    }
+
+
+    /**
+     * Closes database connections
+     *
+     * @memberof Pocket
+     */
+    close() {
+        this.jsonStore.close();
+        this.fileStore.close();
     }
 
 }
