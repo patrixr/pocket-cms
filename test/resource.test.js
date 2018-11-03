@@ -24,7 +24,7 @@ const setupsToTest = {
         },
         bootstrap: (done) => {
             if (isCI()) {
-                return done();
+                return done();  
             }
 
             console.log("Starting mongod");
