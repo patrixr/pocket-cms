@@ -1,4 +1,3 @@
-import path             from "path"
 import env              from "./utils/env"
 import _                from "lodash"
 import { asyncEach }    from "./utils/helpers"

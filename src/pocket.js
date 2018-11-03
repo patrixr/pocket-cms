@@ -6,7 +6,7 @@ import _                from 'lodash'
 import defaultConfig    from './utils/config'
 import express          from 'express'
 import stores           from './stores'
-import { UserManager }  from "./Users";
+import { UserManager }  from "./users";
 import session          from './authentication/session'
 
 
