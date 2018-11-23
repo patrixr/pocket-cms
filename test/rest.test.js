@@ -382,7 +382,8 @@ describe("Rest", () => {
                 userManager.create("adminUser", "password", [ "admins" ]),
                 userManager.create("noPermissionUser", "password", [ "users" ]),
                 userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
-                userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] })
+                userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] }),
+                userManager.create("specialGroupUser", "password", [ "specialGroup" ])
             ])
             .then(() => done());
         })
@@ -458,6 +459,18 @@ describe("Rest", () => {
             await request(TestServer.baseUrl)
                 .post(`/rest/posts`)
                 .set('Authorization', 'Bearer ' + tokenB)
+                .send(sampleData)
+                .expect(200);
+        })
+
+        it("Should only be able to create items if the group is whitelisted by the schema", async () => {
+            const token = await logIn("specialGroupUser", "password");
+
+            pocket.resource('posts').schema.allow('specialGroup', ['create']);
+
+            await request(TestServer.baseUrl)
+                .post(`/rest/posts`)
+                .set('Authorization', 'Bearer ' + token)
                 .send(sampleData)
                 .expect(200);
         })

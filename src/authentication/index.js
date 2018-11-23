@@ -9,7 +9,8 @@ import {
 
 const DEFAULT_PERMISSIONS = {
     ALL_ACCESS: { "*" : [ 'read', 'create', 'update', 'remove' ] },
-    READ_ONLY: { "*" : [ 'read' ] }
+    READ_ONLY: { "*" : [ 'read' ] },
+    NO_PERMISSIONS: {}
 };
 
 /**
@@ -34,7 +35,8 @@ export default function (pocket) {
             }
             
             const groups = req.body.groups || [ userGroups.USERS ];
-            if (_.find(groups, grp => pocket.users.isAdminGroup(grp))) {
+            const adminRegistration = _.find(groups, grp => pocket.users.isAdminGroup(grp));
+            if (adminRegistration) {
                 // We allow the very first admin to register
                 let admins = await userManager.getAdmins();
                 if (admins.length > 0) {
@@ -42,7 +44,7 @@ export default function (pocket) {
                 }
             }
 
-            let user = await userManager.create(req.body.username, req.body.password, groups, DEFAULT_PERMISSIONS.READ_ONLY);
+            let user = await userManager.create(req.body.username, req.body.password, groups, DEFAULT_PERMISSIONS.NO_PERMISSIONS);
             res.json({
                 authenticated: true,
                 token: user.jwt(),

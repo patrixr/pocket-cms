@@ -2,6 +2,11 @@ cjs
 db
 db_test
 
+.cache
+.vscode
+admin_dist
+dist_admin
+
 # Logs
 logs
 *.log

@@ -4,6 +4,7 @@ import _                from "lodash"
 import { expect }       from "chai"
 import Pocket           from '../src/pocket';
 import { isCI }         from "../src/utils/helpers";
+import Schema           from '../src/schema/index';
 
 let mongoServer = null;
 const setupsToTest = {
@@ -46,6 +47,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
     describe(`[${key}] Resource`, () => {
 
         let pocket = null;
+        let schema = null;
         let resource = null;
 
         before((done) => {
@@ -53,20 +55,15 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 if (err) {
                     return done(err);
                 }
-                let schema = {
-                    "id": "Person",
-                    "type": "object",
-                    "properties": {
-                        "firstname": {"type": "string"},
-                        "lastname": {"type": "string"},
-                        "age": {"type": "number"},
-                        "username": {
-                            "type": "string",
-                            "unique": true
-                        }
-                    },
-                    "additionalProperties": false
-                };
+                schema = new Schema({
+                    "firstname": "string",
+                    "lastname": "string",
+                    "age": {"type": "number"},
+                    "username": {
+                        "type": "string",
+                        "unique": true
+                    }
+                });
                 pocket = new Pocket(config);
                 resource = pocket.resource("person", schema);
                 pocket.jsonStore.ready().then(() => done());
@@ -241,7 +238,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
         describe("Hooks", () => {
 
             afterEach((done) => {
-                resource.clearHooks();
+                schema.clearHooks();
                 done();
             });
 
@@ -251,7 +248,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
 
                 let user = await resource.create({ username: "john", firstname: "john" });
 
-                resource.before("find", async ({ query }, ctx) => {
+                schema.before("find", async ({ query }, ctx) => {
                     expect(ctx).to.exist;
                     expect(query).not.to.be.null;
                     expect(query._id).to.equal("badId");
@@ -260,7 +257,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     beforeTriggered = true;
                 });
 
-                resource.after("find", async ({ records }, ctx) => {
+                schema.after("find", async ({ records }, ctx) => {
                     let record = records[0];
                     expect(ctx).to.exist;
                     expect(record).not.to.be.null;
@@ -281,7 +278,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 let beforeTriggered = false;
                 let afterTrigerred = false;
 
-                resource.before("validate", async ({ record, schema }, ctx) => {
+                schema.before("validate", async ({ record, schema }, ctx) => {
                     expect(ctx).to.exist;
                     expect(record).to.exist;
                     expect(schema).to.exist;
@@ -290,7 +287,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     beforeTriggered = true;
                 });
 
-                resource.after("validate", async ({ record, schema, errors }, ctx) => {
+                schema.after("validate", async ({ record, schema, errors }, ctx) => {
                     expect(ctx).to.exist;
                     expect(record).to.exist;
                     expect(schema).to.exist;
@@ -314,7 +311,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
 
                 let user = await resource.create({ username: "Hulk", firstname: "patrick" });
 
-                resource.before("update", async ({ query, operations }, ctx) => {
+                schema.before("update", async ({ query, operations }, ctx) => {
                     expect(ctx).to.exist;
                     expect(query).to.exist;
                     expect(operations).to.exist;
@@ -322,7 +319,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     beforeTriggered = true;
                 });
 
-                resource.after("update", async ({ records, query, operations }, ctx) => {
+                schema.after("update", async ({ records, query, operations }, ctx) => {
                     expect(ctx).to.exist;
                     expect(records).to.exist;
                     expect(query).to.exist;
@@ -345,7 +342,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
 
                 let user = await resource.create({ username: "Hulk", firstname: "patrick" });
 
-                resource.before("remove", async ({ query, options }, ctx) => {
+                schema.before("remove", async ({ query, options }, ctx) => {
                     expect(ctx).to.exist;
                     expect(query).to.exist;
                     expect(options).to.exist;
@@ -353,7 +350,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     beforeTriggered = true;
                 });
 
-                resource.after("remove", async ({ query, options, removedCount }, ctx) => {
+                schema.after("remove", async ({ query, options, removedCount }, ctx) => {
                     expect(ctx).to.exist;
                     expect(query).to.exist;
                     expect(options).to.exist;
@@ -370,7 +367,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 let wasCreated = false;
                 let wasSaved = false;
 
-                resource.before("create", async ({ payload }, ctx) => {
+                schema.before("create", async ({ payload }, ctx) => {
                     expect(ctx).to.exist;
                     expect(payload).not.to.be.null;
                     expect(payload.firstname).to.equal("john");
@@ -379,7 +376,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     payload.username = payload.username + "!"
                 });
 
-                resource.before("save", async ({ payload }, ctx) => {
+                schema.before("save", async ({ payload }, ctx) => {
                     expect(ctx).to.exist;
                     expect(payload).not.to.be.null;
                     expect(payload.firstname).to.equal("john");
@@ -397,7 +394,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
             it("Should allow after create and save hooks", async () => {
                 let wasCreated = false;
                 let wasSaved = false;
-                resource.after("create", async ({ record }, ctx) => {
+                schema.after("create", async ({ record }, ctx) => {
                     expect(ctx).to.exist;
                     expect(record).not.to.be.null;
                     expect(record._id).not.to.be.null;
@@ -411,7 +408,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     wasCreated = true;
                 });
 
-                resource.after("save", async ({ record }, ctx) => {
+                schema.after("save", async ({ record }, ctx) => {
                     expect(ctx).to.exist;
                     expect(record).not.to.be.null;
                     expect(record._id).not.to.be.null;

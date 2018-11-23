@@ -21,6 +21,7 @@ export default function (pocket) {
 
     router.use(bodyParser.json());
     router.use('(/users/:userId)?/:resource', (req, res, next) => {
+        const { resource } = req.params;
 
         req.pocket = pocket;
 
@@ -36,14 +37,17 @@ export default function (pocket) {
             return next();
         }
 
-        const { resource } = req.params;
-        const action       = ACTION_MAP[req.method.toUpperCase()];
-        
-        if (!req.user.isAllowed(action, resource)) {
-            return FORBIDDEN.send(res);
+        const schema = pocket.schemaOf(resource);
+        if (schema && schema.userIsAllowed(req.user)) {
+            return next();
         }
 
-        next();
+        const action = ACTION_MAP[req.method.toUpperCase()];
+        if (req.user.isAllowed(action, resource)) {
+            return next();
+        }
+
+        return FORBIDDEN.send(res);
     })
     router.use(prefix("/:resource"), handlers.preloadResource);
     router.get(prefix("/:resource/:id/attachments/:attachmentId"), handlers.downloadAttachment);

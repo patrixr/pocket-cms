@@ -1,4 +1,3 @@
-import { Resource }         from "./resource"
 import bcrypt               from "bcrypt"
 import Q                    from "q"
 import _                    from "lodash"
@@ -70,34 +69,31 @@ export class User {
     }
 }
 
+const ENFORCE_VALID_GROUP = false;
+
 export class UserManager {
 
     constructor(pocket) {
         this.pocket     = pocket;
         this.config     = pocket.config();
         this.resource   = pocket.resource("_users", {
-            "id": "User",
-            "type": "object",
-            "properties": {
-                "username": {"type": "string"},
-                "password": {"type": "password"},
-                "groups": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "hash": {"type":"string"},
-                "userData": {"type": "object"},
-                "permissions": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": { "type" : "string" }
-                    }
+            "username": "string",
+            "password": "password",
+            "groups": {
+                "type": "array",
+                "items": {
+                    "type": "string"
                 }
             },
-            "additionalProperties": false
+            "hash": "string",
+            "userData": "object",
+            "permissions": {
+                "type": "map",
+                "items": {
+                    "type": "array",
+                    "itemSchema": { "type" : "string" }
+                }
+            }
         });
     }
 
@@ -158,9 +154,11 @@ export class UserManager {
             groups = [ groups ];
         }
 
-        for (let group of groups) {
-            if (!_.find(_.values(this.Groups), (g) => g === group)) {
-                throw INVALID_USER_GROUP;
+        if (ENFORCE_VALID_GROUP) {
+            for (let group of groups) {
+                if (!_.find(_.values(this.Groups), (g) => g === group)) {
+                    throw INVALID_USER_GROUP;
+                }
             }
         }
 

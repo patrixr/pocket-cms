@@ -1,9 +1,22 @@
 {
   "name": "pocket-cms",
   "version": "1.0.0",
-  "main": "cjs/CMS.js",
+  "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.0.0-beta.40",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.0.0-beta.40",
+    "@babel/preset-react": "^7.0.0-beta.40",
+    "@babel/runtime": "^7.1.5",
+    "@vue/component-compiler-utils": "^2.3.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-register": "^6.26.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "esdoc": "^1.1.0",
@@ -16,24 +29,15 @@
     "sass-loader": "^6.0.6",
     "supertest": "^3.0.0",
     "url-loader": "^0.6.2",
-    "@babel/core": "^7.0.0-beta.40",
-    "@babel/preset-env": "^7.0.0-beta.40",
-    "@babel/preset-react": "^7.0.0-beta.40",
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-react": "^6.24.1",
-    "babel-register": "^6.26.0"
+    "vue-template-compiler": "^2.5.17"
   },
   "scripts": {
     "serve": "node bin/serve.js",
-    "serve:watch": "nodemon bin/serve.js",
+    "serve:watch": "nodemon bin/serve.js --ignore 'admin_dist'",
     "test": "mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
-    "build": "babel src --out-dir cjs",
+    "build": "babel src --out-dir cjs --copy-files",
     "prepublishOnly": "npm run build",
     "document": "esdoc"
   },
@@ -50,7 +54,12 @@
     "mmmagic": "^0.5.0",
     "mongodb": "^3.1.7",
     "nedb": "^1.8.0",
+    "parcel-bundler": "^1.10.3",
     "q": "^1.5.1",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "vue": "^2.5.17",
+    "vue-hot-reload-api": "^2.3.1",
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.1"
   }
 }

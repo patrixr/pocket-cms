@@ -30,8 +30,6 @@ export class Resource {
         // ---- Stores
         this.store          = pocket.jsonStore;
         this.attachments    = pocket.fileStore;
-        
-        this.clearHooks();
 
         // ---- Unique Fields
         this.store.ready().then(() => {
@@ -44,7 +42,7 @@ export class Resource {
     // ---- Helpers
 
     getUniqueKeys() {
-        return _.map(this.schema.properties, (desc, name) => desc.unique ? name : null).filter(_.identity);
+        return this.schema ? this.schema.uniqueKeys() : [];
     }
 
     async validate(data, opts = {}) {
@@ -59,15 +57,14 @@ export class Resource {
 
         await this.runHooks({ record: stripped, schema : this.schema }).before('validate');
 
-        // We remove the required fields in order to support partial updates
-        let schema      = isUpdate ? _.omit(this.schema, 'required') : this.schema;
-        let { errors }  = new Validator().validate(stripped, schema);
+        const errors = this.schema.validate(stripped, {
+            ignoreRequired: isUpdate
+        });
 
         await this.runHooks({ record: stripped, schema : this.schema, errors }).after('validate');
 
         if (errors.length > 0) {
-            let msg = errors.map((e) => e.property + " " + e.message).join("\n");
-            throw new Error(400, msg);
+            throw new Error(400, errors.join('\n'));
         }
 
         return stripped;
@@ -356,28 +353,6 @@ export class Resource {
     }
 
     runHooks(data) {
-        const run = async (hooks) => {
-            await asyncEach(hooks, async (hook) => {
-                await hook(data, this.context);
-            });  
-        };
-        return {
-            after: async (...methods) => {
-                for (let method of methods)
-                    await run(this.hooks.after[method] || []);
-            },
-            before: async (...methods) => {
-                for (let method of methods)
-                    await run(this.hooks.before[method] || []); 
-            }
-        };
+        return this.schema.runHooks(data, this.context);
     }
-
-    clearHooks() {
-        this.hooks = {
-            before: {},
-            after: {}
-        };
-    }
-
 }

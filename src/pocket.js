@@ -8,6 +8,8 @@ import express          from 'express'
 import stores           from './stores'
 import { UserManager }  from "./users";
 import session          from './authentication/session'
+import admin            from './admin'
+import Schema           from "./schema"
 
 
 /**
@@ -69,12 +71,26 @@ class Pocket {
             throw `Resource with the name ${name} already registered`;
         }
 
+        if (!(schema instanceof Schema)) {
+            schema = new Schema(schema);
+        }
+
         const resource = new Resource(name, schema, this);
         this.resources[resource.name] = resource;
         return resource;
     }
 
-
+    /**
+     * Returns the schema of a resource
+     *
+     * @param {*} resourceName
+     * @returns
+     * @memberof Pocket
+     */
+    schemaOf(resourceName) {
+        const resource = this.resource(resourceName);
+        return resource && resource.schema;
+    }
 
     /**
      * Sets up the routes
@@ -92,10 +108,11 @@ class Pocket {
 
         // Auto-generated rest api
         app.use("/rest", rest(this));     
+        
+        app.use("/admin", admin(this));     
 
         return app;
     }
-
 
 
     /**
@@ -120,5 +137,9 @@ class Pocket {
     }
 
 }
+
+Pocket.Schema = Schema;
+
+module.exports = Pocket
 
 export default Pocket;
