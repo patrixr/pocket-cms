@@ -132,7 +132,7 @@ class MongoAdapter extends BaseAdapter {
      * Closes the connection
      */
     async close() {
-        this.client.close();
+        return this.client.close();
     }
 
     /**

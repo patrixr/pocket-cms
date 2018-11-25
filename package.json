@@ -25,7 +25,6 @@
     "test": "mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
-    "prepublishOnly": "npm run build",
     "document": "esdoc"
   },
   "dependencies": {

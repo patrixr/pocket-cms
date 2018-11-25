@@ -147,7 +147,7 @@ class DiskStore {
         return true;
     }
 
-    close() {
+    async close() {
         // noop
     }
 }
