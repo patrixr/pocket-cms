@@ -3,7 +3,7 @@
  *
  * @export
  */
-export default function (pocket) {
+module.exports = function (pocket) {
     const userManager = pocket.users;
 
     return function (req, res, next) {

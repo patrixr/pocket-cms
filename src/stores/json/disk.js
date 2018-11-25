@@ -1,12 +1,12 @@
-import path             from 'path'
-import Q                from 'q'
-import _                from 'lodash'
-import nedb             from "nedb"
-import Cache            from "../../utils/cache"
-import { BaseAdapter }  from './base'
-import { promisify }    from "../../utils/helpers"
+const  path             = require('path');
+const  Q                = require('q');
+const  _                = require('lodash');
+const  nedb             = require("nedb");
+const  Cache            = require("../../utils/cache");
+const  BaseAdapter      = require('./base');
+const  { promisify }    = require("../../utils/helpers");
 
-export class DiskAdapter extends BaseAdapter {
+class DiskAdapter extends BaseAdapter {
 
     constructor(pocket, config) {
         super(pocket, config);
@@ -132,4 +132,4 @@ export class DiskAdapter extends BaseAdapter {
     }
 }
 
-export default DiskAdapter;
+module.exports = DiskAdapter;

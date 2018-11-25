@@ -1,6 +1,6 @@
-import _        from "lodash"
-import log4js   from "log4js"
-import Q        from 'q';
+const _        = require("lodash");
+const log4js   = require("log4js");
+const Q        = require('q');
 
 const logger = log4js.getLogger();
 
@@ -14,7 +14,7 @@ const HttpCodeMapping = {
     "ENOENT"    : 404
 };
 
-export class Error {
+class Error {
 
     /**
      * Creates a new Error object from an exception 
@@ -66,12 +66,13 @@ export class Error {
     }
 }
 
-export const USERNAME_TAKEN         = new Error(409, "Username is already in use");
-export const INTERNAL_ERROR         = new Error(500, "Internal server error");
-export const INVALID_USERNAME_PW    = new Error(401, "Invalid username or password");
-export const INVALID_USER_GROUP     = new Error(400, "Invalid user group");
-export const RESOURCE_NOT_FOUND     = new Error(404, "Resource not found");
-export const FORBIDDEN              = new Error(403, "Forbidden");
-export const UNAUTHORIZED           = new Error(401, "Unauthorized");
-export const SESSION_EXPIRED        = new Error(401, "Session Expired");
-export const MISSING_FILE           = new Error(400, "Missing file");
+exports.Error = Error;
+exports.USERNAME_TAKEN         = new Error(409, "Username is already in use");
+exports.INTERNAL_ERROR         = new Error(500, "Internal server error");
+exports.INVALID_USERNAME_PW    = new Error(401, "Invalid username or password");
+exports.INVALID_USER_GROUP     = new Error(400, "Invalid user group");
+exports.RESOURCE_NOT_FOUND     = new Error(404, "Resource not found");
+exports.FORBIDDEN              = new Error(403, "Forbidden");
+exports.UNAUTHORIZED           = new Error(401, "Unauthorized");
+exports.SESSION_EXPIRED        = new Error(401, "Session Expired");
+exports.MISSING_FILE           = new Error(400, "Missing file");

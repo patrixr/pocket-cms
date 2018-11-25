@@ -11,6 +11,8 @@
 
  }
 
- export function Wrap(o) {
-   return new ObjectWrapper(o);
- }
+ module.exports = {
+  Wrap(o) {
+    return new ObjectWrapper(o);
+  }
+};

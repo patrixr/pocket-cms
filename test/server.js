@@ -1,7 +1,7 @@
-import express  from "express"
-import Pocket   from "../src/pocket"
-import _        from "lodash"
-import http     from "http"
+const express  = require("express");
+const Pocket   = require("../src/pocket");
+const _        = require("lodash");
+const http     = require("http");
 
 class TestServer {
 
@@ -48,4 +48,4 @@ class TestServer {
 
 }
 
-export default new TestServer();
+module.exports = new TestServer();

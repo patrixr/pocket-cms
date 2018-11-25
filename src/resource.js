@@ -1,8 +1,6 @@
-import env              from "./utils/env"
-import _                from "lodash"
-import { asyncEach }    from "./utils/helpers"
-import { Error }        from "./utils/errors"
-import { Validator }    from "jsonschema"
+const env              = require("./utils/env");
+const _                = require("lodash");
+const { Error }        = require("./utils/errors");
 
 const reservedProperties = [ 
     "_id",
@@ -18,7 +16,7 @@ const reservedProperties = [
  * @export
  * @class Resource
  */
-export class Resource {
+class Resource {
 
     constructor(name, schema, pocket, context = {}) {
         this.name       = name;
@@ -93,7 +91,7 @@ export class Resource {
     // ---- Methods
 
     /**
-     * Returns a record from it's ID
+     * Returns a record = require(it's ID);
      *
      * @param {*} id
      * @returns
@@ -148,7 +146,7 @@ export class Resource {
     }
 
     /**
-     * Creates a record from the payload
+     * Creates a record = require(the payload);
      *
      * @param {*} payload
      * @param {*} [opts={}]
@@ -356,3 +354,5 @@ export class Resource {
         return this.schema.runHooks(data, this.context);
     }
 }
+
+module.exports = Resource;

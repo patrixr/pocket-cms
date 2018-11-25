@@ -1,6 +1,6 @@
-import _    from "lodash"
-import Q    from "q"
-import fs   from "fs";
+const  _    = require("lodash");
+const  Q    = require("q");
+const  fs   = require("fs");
 
 /**
  * Transforms a node-style callback method into a pronise returning function
@@ -10,7 +10,7 @@ import fs   from "fs";
  * @param {function} method 
  * @param {*} scope 
  */
-export function promisify(method, scope) {
+function promisify(method, scope) {
     return function (...args) {
         let deferred = Q.defer();
 
@@ -33,7 +33,7 @@ export function promisify(method, scope) {
  * @param {*} x
  * @returns
  */
-export function isNumeric (x) {
+function isNumeric (x) {
     return ((typeof x === 'number' || typeof x === 'string') && !isNaN(Number(x)));
 }
 
@@ -44,7 +44,7 @@ export function isNumeric (x) {
  * @param {*} list
  * @param {function} func
  */
-export async function asyncEach(list, func) {
+async function asyncEach(list, func) {
     for (let i = 0; i < list.length; ++i) {
         await func(list[i]);
     }
@@ -56,7 +56,7 @@ export async function asyncEach(list, func) {
  * @param {string} file 
  * @param {string|function} defaultValue 
  */
-export function stringFromFile(file, defaultValue) {
+function stringFromFile(file, defaultValue) {
     if (fs.existsSync(file)) {
         return fs.readFileSync(file).toString();
     }
@@ -75,6 +75,14 @@ export function stringFromFile(file, defaultValue) {
  * @export
  * @returns {boolean}
  */
-export function isCI() {
+function isCI() {
     return 'TRAVIS' in process.env;
 }
+
+module.exports = {
+    promisify,
+    isNumeric,
+    asyncEach,
+    stringFromFile,
+    isCI
+};

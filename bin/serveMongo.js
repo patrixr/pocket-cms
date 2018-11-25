@@ -1,11 +1,6 @@
-require('babel-polyfill');
-require('babel-register')({
-    presets: [ 'env' ]
-});
-
-var express = require("express");
-var log4js  = require("log4js");
-var Pocket  = require("../src/pocket").default;
+const express = require("express");
+const log4js  = require("log4js");
+const Pocket  = require("../src/pocket");
 
 let logger  = log4js.getLogger();
 let server  = express();

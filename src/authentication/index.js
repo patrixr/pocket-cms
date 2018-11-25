@@ -1,11 +1,11 @@
-import { Router }       from "express"
-import bodyParser       from "body-parser"
-import _                from "lodash"
-import session          from "./session"
-import { 
+const { Router }       = require("express");
+const bodyParser       = require("body-parser");
+const _                = require("lodash");
+const session          = require("./session");
+const { 
     Error, 
     INVALID_USERNAME_PW, 
-    UNAUTHORIZED }   from "../utils/errors"
+    UNAUTHORIZED }   = require("../utils/errors");
 
 const DEFAULT_PERMISSIONS = {
     ALL_ACCESS: { "*" : [ 'read', 'create', 'update', 'remove' ] },
@@ -20,7 +20,7 @@ const DEFAULT_PERMISSIONS = {
  * @param {*} pocket
  * @returns
  */
-export default function (pocket) {
+module.exports = function (pocket) {
     let router          = Router();
     let userManager     = pocket.users;
     let userGroups      = userManager.Groups;

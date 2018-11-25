@@ -1,8 +1,8 @@
-import _                      from "lodash";
-import { Validator }          from "jsonschema";
-import { JsonSchemaBuilder }  from "./mapper";
-import { asyncEach }          from '../utils/helpers';
-import { User }               from '../users';
+const _                      = require("lodash");
+const { Validator }          = require("jsonschema");
+const { JsonSchemaBuilder }  = require("./mapper");
+const { asyncEach }          = require('../utils/helpers');
+const { User }               = require('../users');
 
 const ALLOWED_ACTIONS = ['read', 'create', 'update', 'remove'];
 const ACTION_ALIASES = {
@@ -14,7 +14,7 @@ const ACTION_ALIASES = {
 
 const builder = new JsonSchemaBuilder();
 
-export default class Schema {
+class Schema {
   constructor(fields) {
     this.fields = fields;
     this.jsonSchema = builder.build(fields);
@@ -128,3 +128,5 @@ export default class Schema {
     };
   }
 }
+
+module.exports = Schema;

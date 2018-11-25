@@ -1,14 +1,14 @@
-import { MongoClient }  from 'mongodb'
-import { BaseAdapter }  from './base'
-import assert           from 'assert'
-import log4js           from 'log4js' 
-import Q                from 'q'
-import _                from 'lodash'
-import { promisify }    from '../../utils/helpers'
+const { MongoClient }  = require('mongodb');
+const BaseAdapter      = require('./base');
+const assert           = require('assert');
+const log4js           = require('log4js' );
+const Q                = require('q');
+const _                = require('lodash');
+const { promisify }    = require('../../utils/helpers');
 
 const logger = log4js.getLogger();
 
-export class MongoAdapter extends BaseAdapter {
+class MongoAdapter extends BaseAdapter {
 
     constructor(pocket, config) {
         super(pocket, config);
@@ -143,4 +143,4 @@ export class MongoAdapter extends BaseAdapter {
     }
 }
 
-export default MongoAdapter;
+module.exports = MongoAdapter;

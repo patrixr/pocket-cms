@@ -1,13 +1,13 @@
-import path             from 'path'
-import fs               from 'fs'
-import _                from 'lodash'
-import Q                from 'q'
-import uuid             from 'uuid/v1'
-import { promisify }    from '../../utils/helpers';
-import mkdirp           from 'mkdirp'
-import { 
+const path             = require('path');
+const fs               = require('fs');
+const _                = require('lodash');
+const Q                = require('q');
+const uuid             = require('uuid/v1');
+const { promisify }    = require('../../utils/helpers');
+const mkdirp           = require('mkdirp');
+const { 
     MAGIC_MIME_TYPE,
-    Magic }        from 'mmmagic'
+    Magic }        = require('mmmagic');
 
 /**
  * 
@@ -15,7 +15,7 @@ import {
  * @export
  * @class DiskStore
  */
-export class DiskStore {
+class DiskStore {
 
     /**
      * Creates an instance of DiskStore.
@@ -147,6 +147,9 @@ export class DiskStore {
         return true;
     }
 
+    close() {
+        // noop
+    }
 }
 
-export default DiskStore;
+module.exports = DiskStore;

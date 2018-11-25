@@ -1,12 +1,12 @@
-import _ from "lodash";
-import { TEXT, ENUM, NUMBER, OBJECT, EMAIL, ARRAY_OF, ARRAY, PASSWORD, MAP_OF} from "./types";
+const _ = require("lodash");
+const { TEXT, ENUM, NUMBER, OBJECT, EMAIL, ARRAY_OF, ARRAY, PASSWORD, MAP_OF} = require("./types");
 
 /**
  * Creates a JsonSchema out of a Pocket Schema
  *
  * @class JsonSchemaBuilder
  */
-export class JsonSchemaBuilder {
+class JsonSchemaBuilder {
   constructor() {
     this.mapping = {
       number: () => {
@@ -77,4 +77,4 @@ export class JsonSchemaBuilder {
   }
 }
 
-export default JsonSchemaBuilder;
+module.exports = { JsonSchemaBuilder };

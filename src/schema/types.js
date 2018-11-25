@@ -1,6 +1,6 @@
-import _ from "lodash"
+const _ = require("lodash");
 
-export function TEXT(max) {
+function TEXT(max) {
     let definition = {
         "type": "string",
         "minLength": 1,
@@ -11,41 +11,41 @@ export function TEXT(max) {
     return definition;
 };
 
-export function ENUM(strings) {
+function ENUM(strings) {
     return {
         "type": "string",
         "enum": strings
     };
 }
 
-export function OBJECT() {
+function OBJECT() {
     return {
         "type": "object"
     };
 }
 
-export function PASSWORD() {
+function PASSWORD() {
     return {
         "type": "password"
     };
 }
 
-export function MAP_OF(jsonSchema) {
+function MAP_OF(jsonSchema) {
     return {
         "type": "object",
         "additionalProperties": jsonSchema
     }
 }
 
-export function NUMBER() {
+function NUMBER() {
     return { "type": "number" };
 }
 
-export function EMAIL() {
+function EMAIL() {
     return { "type": "string", "format": "email" };
 }
 
-export function ARRAY(minItems = 0) {
+function ARRAY(minItems = 0) {
     let definition = {
         "type": "array"
     };
@@ -55,10 +55,22 @@ export function ARRAY(minItems = 0) {
     return definition;
 }
 
-export function ARRAY_OF(jsonSchema, minItems = 0) {
+function ARRAY_OF(jsonSchema, minItems = 0) {
     let definition = ARRAY(minItems);
     if (jsonSchema) {
         definition.items = jsonSchema;
     }
     return definition;
+}
+
+module.exports = {
+    ARRAY_OF,
+    ARRAY,
+    EMAIL,
+    NUMBER,
+    OBJECT,
+    MAP_OF,
+    PASSWORD,
+    TEXT,
+    ENUM
 }

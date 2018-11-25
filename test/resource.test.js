@@ -1,10 +1,10 @@
-import Mongod           from "mongod"
-import path             from "path"
-import _                from "lodash"
-import { expect }       from "chai"
-import Pocket           from '../src/pocket';
-import { isCI }         from "../src/utils/helpers";
-import Schema           from '../src/schema/index';
+const Mongod           = require("mongod");
+const path             = require("path");
+const _                = require("lodash");
+const { expect }       = require("chai");
+const Pocket           = require("../src/pocket");
+const { isCI }         = require("../src/utils/helpers");
+const Schema           = require("../src/schema/index");
 
 let mongoServer = null;
 const setupsToTest = {

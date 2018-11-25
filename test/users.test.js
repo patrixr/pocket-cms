@@ -1,8 +1,8 @@
-import _                    from "lodash"
-import { expect }           from "chai"
-import Q                    from "q"
-import config               from "../src/utils/config"
-import Pocket               from '../src/pocket';
+const _                    = require("lodash");
+const { expect }           = require("chai");
+const Q                    = require("q");
+const config               = require("../src/utils/config");
+const Pocket               = require('../src/pocket');
 
 describe("Users", () => {
 
@@ -22,6 +22,10 @@ describe("Users", () => {
         userManager.resource.drop().then(() => done());
     })
 
+    afterEach(() => {
+        userManager.ENFORCE_VALID_GROUP = false;
+    })
+
     it("Should create an admin user", async () => {
         let user = await userManager.create("patrick", "123456", userManager.Groups.ADMINS)
         expect(user).not.to.be.null;
@@ -39,6 +43,7 @@ describe("Users", () => {
     })
 
     it("Should fail to create a user of an unknown group", (done) => {
+        userManager.ENFORCE_VALID_GROUP = true;
         expect(userManager.create("bob", "123456", "invalid_group"))
             .to.eventually.be.rejected.notify(done);
     })
@@ -55,7 +60,7 @@ describe("Users", () => {
             .notify(done)
     })
 
-    it("Should fail to load a user from an expired JWT token", (done) => {
+    it("Should fail to load a user fro, an expired JWT token", (done) => {
         let jwt = null;
         let expirationTimeout = config.session.expiresIn;
         config.session.expiresIn = 1; // 1 second

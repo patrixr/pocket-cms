@@ -1,11 +1,11 @@
-import Bundler                  from 'parcel-bundler'
-import express, { Router }      from 'express'
-import env                      from '../utils/env';
+const Bundler                  = require('parcel-bundler');
+const express                  = require('express');
+const env                      = require('../utils/env');
 
 const OUT_DIR = __dirname + '/dist_admin';
 
-export default function (pocket) {
-    let router          = Router();
+module.exports = function (pocket) {
+    let router          = express.Router();
 
     if (env() !== "test") {
         const bundler = new Bundler(__dirname + '/frontend/index.html', {

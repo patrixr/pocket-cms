@@ -7,7 +7,7 @@ let env = process.env.NODE_ENV || "dev";
  * @param {*} [newEnv=null]
  * @returns {String} the environment name
  */
-export default function(newEnv = null) {
+module.exports = function(newEnv = null) {
     if (newEnv) {
         env = newEnv;
     }

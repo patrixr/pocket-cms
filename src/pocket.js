@@ -1,15 +1,15 @@
-import Q                from "q"
-import rest             from "./rest"
-import authentication   from "./authentication"
-import { Resource }     from './resource'
-import _                from 'lodash'
-import defaultConfig    from './utils/config'
-import express          from 'express'
-import stores           from './stores'
-import { UserManager }  from "./users";
-import session          from './authentication/session'
-import admin            from './admin'
-import Schema           from "./schema"
+const Q                = require("q");
+const rest             = require("./rest");
+const authentication   = require("./authentication");
+const Resource         = require('./resource');
+const _                = require('lodash');
+const defaultConfig    = require('./utils/config');
+const express          = require('express');
+const stores           = require('./stores');
+const { UserManager }  = require("./users");
+const session          = require('./authentication/session');
+const admin            = require('./admin');
+const Schema           = require("./schema");
 
 
 /**
@@ -140,6 +140,4 @@ class Pocket {
 
 Pocket.Schema = Schema;
 
-module.exports = Pocket
-
-export default Pocket;
+module.exports = Pocket;

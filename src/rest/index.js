@@ -1,11 +1,11 @@
-import { Router }       from "express"
-import * as handlers    from "./handlers"
-import bodyParser       from "body-parser"
-import env              from "../utils/env"
-import config           from "../utils/config"
-import { 
+const { Router }       = require("express");
+const handlers         = require("./handlers");
+const bodyParser       = require("body-parser");
+const env              = require("../utils/env");
+const config           = require("../utils/config");
+const { 
     FORBIDDEN, 
-    UNAUTHORIZED}       from "../utils/errors"
+    UNAUTHORIZED}       = require("../utils/errors");
 
 const ACTION_MAP = {
     POST: 'create',
@@ -14,7 +14,7 @@ const ACTION_MAP = {
     PUT: 'update'
 };
 
-export default function (pocket) {
+module.exports = function (pocket) {
     let router = Router();
     
     const prefix = (endpoint) => `(/users/:userId)?${endpoint}`
@@ -37,12 +37,13 @@ export default function (pocket) {
             return next();
         }
 
+        const action = ACTION_MAP[req.method.toUpperCase()];
         const schema = pocket.schemaOf(resource);
-        if (schema && schema.userIsAllowed(req.user)) {
+
+        if (schema && schema.userIsAllowed(req.user, action)) {
             return next();
         }
 
-        const action = ACTION_MAP[req.method.toUpperCase()];
         if (req.user.isAllowed(action, resource)) {
             return next();
         }

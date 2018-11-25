@@ -1,11 +1,11 @@
-import Q                from "q"
-import request          from "supertest"
-import path             from "path"
-import rimraf           from "rimraf"
-import _                from "lodash"
-import config           from "../src/utils/config";
-import TestServer       from "./server"
-import { expect }       from "chai"
+const Q                = require("q");
+const request          = require("supertest");
+const path             = require("path");
+const rimraf           = require("rimraf");
+const _                = require("lodash");
+const config           = require("../src/utils/config");
+const TestServer       = require("./server");
+const { expect }       = require("chai");
 
 describe("Rest", () => {
 

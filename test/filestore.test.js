@@ -1,12 +1,12 @@
-import config           from "../src/utils/config";
-import fs               from "fs"
-import path             from "path"
-import rimraf           from "rimraf"
-import _                from "lodash"
-import Q                from "q"
-import { expect }       from "chai"
-import DiskStore        from '../src/stores/files/disk';
-import Pocket           from '../src/pocket';
+const config           = require("../src/utils/config");
+const fs               = require("fs");
+const path             = require("path");
+const rimraf           = require("rimraf");
+const _                = require("lodash");
+const Q                = require("q");
+const { expect }       = require("chai");
+const DiskStore        = require("../src/stores/files/disk");
+const Pocket           = require("../src/pocket");
 
 const uploadFolder = config.filestore.options.uploadFolder;
 

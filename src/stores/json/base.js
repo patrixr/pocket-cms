@@ -1,4 +1,4 @@
-export class BaseAdapter {
+class BaseAdapter {
     constructor(pocket, config) {
         this.pocket = pocket;
         this.config = config;
@@ -81,3 +81,5 @@ export class BaseAdapter {
         throw 'Not Implemented'
     }
 }
+
+module.exports = BaseAdapter;

@@ -1,15 +1,13 @@
-import log4js       from "log4js"
-import _            from "lodash"
-import Busboy       from 'busboy'
-import Q            from 'q'
-import {isNumeric}  from '../utils/helpers'
-import { 
+const  log4js       = require("log4js");
+const  _            = require("lodash");
+const  Busboy       = require('busboy');
+const  Q            = require('q');
+const  {isNumeric}  = require('../utils/helpers');
+const  { 
     Error, 
     INTERNAL_ERROR,
-    RESOURCE_NOT_FOUND }  from "../utils/errors"
+    RESOURCE_NOT_FOUND }  = require("../utils/errors");
 
-
-const logger = log4js.getLogger();
 
 // ---- Helpers
 
@@ -35,7 +33,7 @@ function Handler(fn) {
  * @param {*} res 
  * @param {*} next 
  */
-export function preloadResource(req, res, next) {
+function preloadResource(req, res, next) {
     const pocket        = req.pocket;
     const resourceName  = req.params.resource;
     const resource      = pocket.resource(resourceName).withContext({ user: req.user, request: req })
@@ -56,7 +54,7 @@ export function preloadResource(req, res, next) {
  * @param {*} req 
  * @param {*} res 
  */
-export const getOne = Handler(async (req, res) => {
+const getOne = Handler(async (req, res) => {
     const id        = req.params.id;
     const userId    = req.params.userId;
     const record    = await req.resource.get(id);
@@ -78,7 +76,7 @@ export const getOne = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const getAll = Handler(async (req, res) => {
+const getAll = Handler(async (req, res) => {
     const { page, pageSize } = req.query;
     const { userId }         = req.params;
     
@@ -107,7 +105,7 @@ export const getAll = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const createOne = Handler(async (req, res) => {
+const createOne = Handler(async (req, res) => {
     const userId = req.params.userId;
     let record = await req.resource.create(req.body, { userId });
     res.json(record);
@@ -121,7 +119,7 @@ export const createOne = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const attachFile = Handler((req, res) => {
+const attachFile = Handler((req, res) => {
     const id        = req.params.id;
     const resource  = req.resource;
     
@@ -163,7 +161,7 @@ export const attachFile = Handler((req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const downloadAttachment = Handler(async (req, res) => {
+const downloadAttachment = Handler(async (req, res) => {
     const id        = req.params.id;
     const attId     = req.params.attachmentId;
     const resource  = req.resource;
@@ -196,7 +194,7 @@ export const downloadAttachment = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const deleteAttachment = Handler(async (req, res) => {
+const deleteAttachment = Handler(async (req, res) => {
     const id        = req.params.id;
     const attId     = req.params.attachmentId;
 
@@ -212,7 +210,7 @@ export const deleteAttachment = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const updateOne = Handler(async (req, res) => {
+const updateOne = Handler(async (req, res) => {
     const id    = req.params.id;
     let record = await req.resource.mergeOne(id, req.body);
     res.json(record);
@@ -227,8 +225,20 @@ export const updateOne = Handler(async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const removeOne = Handler(async (req, res) => {
+const removeOne = Handler(async (req, res) => {
     const id    = req.params.id;
     await req.resource.removeOne(id);
     res.sendStatus(200);
 });
+
+module.exports = {
+    removeOne,
+    updateOne,
+    deleteAttachment,
+    downloadAttachment,
+    attachFile,
+    createOne,
+    getAll,
+    getOne,
+    preloadResource
+}

@@ -1,4 +1,4 @@
-export default class Cache {
+class Cache {
 
     constructor() {
         this.data = {};
@@ -39,3 +39,5 @@ export default class Cache {
         }
     }
 }
+
+module.exports = Cache;

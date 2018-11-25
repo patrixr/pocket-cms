@@ -1,18 +1,18 @@
-import bcrypt               from "bcrypt"
-import Q                    from "q"
-import _                    from "lodash"
-import jwt                  from "jsonwebtoken"
-import config               from "./utils/config"
-import { 
+const bcrypt               = require("bcrypt")
+const Q                    = require("q")
+const _                    = require("lodash")
+const jwt                  = require("jsonwebtoken")
+const config               = require("./utils/config")
+const { 
     INVALID_USER_GROUP,
     INVALID_USERNAME_PW,
     SESSION_EXPIRED,
     USERNAME_TAKEN, 
     UNAUTHORIZED, 
-    INTERNAL_ERROR }   from "./utils/errors"
+    INTERNAL_ERROR }   = require("./utils/errors")
 
 
-export class User {
+class User {
 
     constructor(resource, config) {
         this.config             = config;
@@ -69,9 +69,7 @@ export class User {
     }
 }
 
-const ENFORCE_VALID_GROUP = false;
-
-export class UserManager {
+class UserManager {
 
     constructor(pocket) {
         this.pocket     = pocket;
@@ -95,6 +93,8 @@ export class UserManager {
                 }
             }
         });
+
+        this.ENFORCE_VALID_GROUP = false;
     }
 
     get Groups() {
@@ -154,7 +154,7 @@ export class UserManager {
             groups = [ groups ];
         }
 
-        if (ENFORCE_VALID_GROUP) {
+        if (this.ENFORCE_VALID_GROUP) {
             for (let group of groups) {
                 if (!_.find(_.values(this.Groups), (g) => g === group)) {
                     throw INVALID_USER_GROUP;
@@ -262,5 +262,6 @@ export class UserManager {
 
         return deferred.promise;
     }
-
 }
+
+module.exports = { User, UserManager };

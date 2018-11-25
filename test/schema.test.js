@@ -1,6 +1,6 @@
-import { expect } from "chai";
-import { JsonSchemaBuilder } from "../src/schema/mapper";
-import _ from "lodash";
+const { expect }  = require("chai");
+const { JsonSchemaBuilder }  = require("../src/schema/mapper");
+const _  = require("lodash");
 
 describe("Schemas", () => {
     describe("JsonSchema Builder", () => {
