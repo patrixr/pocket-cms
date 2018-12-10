@@ -24,7 +24,7 @@ describe("Rest", () => {
 
     afterEach((done) => {
         Q.all(
-            _.values(pocket.resources).map(r => r.drop())  
+            _.values(pocket.resources).map(r => r.drop())
         )
         .then(() => done());
     })
@@ -108,7 +108,7 @@ describe("Rest", () => {
                 .query({ pageSize: 6, page: 1 })
                 .expect(200)
                 .expect('Content-Type', /json/)
-                
+
             let page1 = res1.body;
             expect(page1).to.be.an('array');
             expect(page1).to.have.length(6);
@@ -118,7 +118,7 @@ describe("Rest", () => {
                 .query({ pageSize: 6, page: 2 })
                 .expect(200)
                 .expect('Content-Type', /json/)
-                
+
             let page2 = res2.body;
             expect(page2).to.be.an('array');
             expect(page2).to.have.length(4);
@@ -131,7 +131,7 @@ describe("Rest", () => {
                 .get('/rest/posts')
                 .expect(200)
                 .expect('Content-Type', /json/);
-                
+
             const body = response.body;
             expect(body).to.been.an('array');
             expect(body).to.have.lengthOf(10);
@@ -162,7 +162,7 @@ describe("Rest", () => {
 
             let { body }  = await request(TestServer.baseUrl)
                 .get(`/rest/posts/${post._id}`);
-            
+
             expect(body).to.been.an('object');
             expect(body).to.contain.keys([ ...properties, "_id" ]);
             expect(body.message).to.equal('new message');
@@ -174,7 +174,7 @@ describe("Rest", () => {
                 .post(`/rest/posts/${post._id}/attachments`)
                 .attach('myfile', testFile('sample_image.png'))
                 .expect(200);
-            
+
             expect(body).to.be.an('object');
             expect(body._attachments).to.be.an('array');
             expect(body._attachments).to.be.of.length(1);
@@ -202,7 +202,7 @@ describe("Rest", () => {
                 .post(`/rest/posts/${post._id}/attachments`)
                 .attach('myfile', testFile('sample_image.png'))
                 .expect(200);
-            
+
             expect(body._attachments[0].id).to.exist;
             expect(body._attachments[0].id).not.to.be.null;
 
@@ -230,7 +230,7 @@ describe("Rest", () => {
 
             let updatedPost = await resource.get(_id);
             expect(updatedPost._attachments.length).to.equal(0);
-            
+
             await request(TestServer.baseUrl)
                 .get(`/rest/posts/${_id}/attachments/${attachmentId}`)
                 .expect(404);
@@ -283,7 +283,7 @@ describe("Rest", () => {
 
         it("Should sign in and receive an authentication token", async () => {
             await userManager.create("admin", "password", [ "admins" ]);
-            const { body } = 
+            const { body } =
                 await request(TestServer.baseUrl)
                     .post("/users/login")
                     .send({
@@ -304,7 +304,7 @@ describe("Rest", () => {
 
         it("Should allow users to refresh their jwt token", async () => {
             await userManager.create("admin", "password", [ "admins" ]);
-            const loginResponse = 
+            const loginResponse =
                 await request(TestServer.baseUrl)
                     .post("/users/login")
                     .send({
@@ -400,7 +400,6 @@ describe("Rest", () => {
                 .post("/users/login")
                 .send({ username, password })
                 .expect(200);
-            
             return body.token;
         }
 
@@ -475,6 +474,27 @@ describe("Rest", () => {
                 .expect(200);
         })
 
+        it("Should not be allowed to access private CMS resources as a non-admin (e.g /rest/_users)", async () => {
+            const token = await logIn("specialGroupUser", "password");
+
+            // Rights are ignored for private resources
+            pocket.resource('_users').schema.allow('specialGroup', ['read']);
+
+            await request(TestServer.baseUrl)
+                .get(`/rest/_users`)
+                .set('Authorization', 'Bearer ' + token)
+                .expect(403);
+        })
+
+        it("Should  be allowed to access private CMS resources as admin (e.g /rest/_users)", async () => {
+            const token = await logIn("adminUser", "password");
+
+            await request(TestServer.baseUrl)
+                .get(`/rest/_users`)
+                .set('Authorization', 'Bearer ' + token)
+                .expect(200);
+        })
+
         it("Should permit creating an item after logging in as Admin", async () => {
             const token = await logIn("adminUser", "password");
             await request(TestServer.baseUrl)
@@ -511,7 +531,7 @@ describe("Rest", () => {
                 .post("/users/login")
                 .send({ username, password })
                 .expect(200);
-            
+
             return body.token;
         }
 

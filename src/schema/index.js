@@ -22,10 +22,15 @@ class Schema {
     this.permissions = {};
   }
 
-  uniqueKeys() {
+  indices() {
     return _.chain(this.fields)
-      .pickBy(f => f.unique)
-      .keys()
+      .pickBy(f => !!f.index)
+      .map(({ index }, key) => {
+        return {
+          field: key,
+          unique: _.isObject(index) && !!index.unique
+        };
+      })
       .value();
   }
 
@@ -75,11 +80,17 @@ class Schema {
   // ---- VALIDATION
 
   validate(data, opts = {}) {
-    const { ignoreRequired = false } = opts;
+    const {
+      additionalProperties = false,
+      ignoreRequired = false
+    } = opts;
 
-    let schema = this.jsonSchema;
+    let schema = _.extend({}, this.jsonSchema);
     if (ignoreRequired) {
       schema = _.omit(schema, "required");
+    }
+    if (additionalProperties) {
+      schema.additionalProperties = true;
     }
 
     return new Validator()
@@ -91,9 +102,10 @@ class Schema {
 
   before(method, fn) {
     if (!this.hooks.before[method]) {
-    this.hooks.before[method] = [];
+      this.hooks.before[method] = [];
     }
     this.hooks.before[method].push(fn);
+    return this;
   }
 
   after(method, fn) {
@@ -101,6 +113,7 @@ class Schema {
       this.hooks.after[method] = [];
     }
     this.hooks.after[method].push(fn);
+    return this;
   }
 
   runHooks(data, context) {
@@ -111,11 +124,11 @@ class Schema {
     };
     return {
       after: async (...methods) => {
-        for (let method of methods) 
+        for (let method of methods)
           await run(this.hooks.after[method] || []);
       },
       before: async (...methods) => {
-        for (let method of methods) 
+        for (let method of methods)
           await run(this.hooks.before[method] || []);
       }
     };

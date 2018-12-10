@@ -16,9 +16,10 @@ module.exports = function (pocket) {
 
         const token = auth.replace(/^Bearer /i, "");
 
+        req.ctx = req.ctx || {};
         userManager.fromJWT(token)
             .then(user => {
-                req.user = user;
+                req.ctx.user = user;
                 next();
             })
             .catch(() => next());

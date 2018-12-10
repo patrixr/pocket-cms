@@ -43,7 +43,7 @@ class Error {
             logger.error(`Unknown error : `, err);
             code = 500;
         }
-        
+
         message = (message || defaultErrorMessages[code] || "Internal server error");
         return new Error(code, message);
     }
@@ -59,6 +59,7 @@ class Error {
             code: this.code,
             message: this.message
         });
+        this.stack = new Error().stack
     }
 
     promise() {

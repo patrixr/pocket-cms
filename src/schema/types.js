@@ -24,7 +24,7 @@ function OBJECT() {
     };
 }
 
-function PASSWORD() {
+function PASSWORD(hashField) {
     return {
         "type": "password"
     };

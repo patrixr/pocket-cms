@@ -3,8 +3,8 @@ const  _            = require("lodash");
 const  Busboy       = require('busboy');
 const  Q            = require('q');
 const  {isNumeric}  = require('../utils/helpers');
-const  { 
-    Error, 
+const  {
+    Error,
     INTERNAL_ERROR,
     RESOURCE_NOT_FOUND }  = require("../utils/errors");
 
@@ -26,17 +26,17 @@ function Handler(fn) {
 
 /**
  * Loads the resource specified in the url, and attaches it to the request object
- * 
+ *
  * ANY /:resource
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
  */
 function preloadResource(req, res, next) {
-    const pocket        = req.pocket;
-    const resourceName  = req.params.resource;
-    const resource      = pocket.resource(resourceName).withContext({ user: req.user, request: req })
+    const { pocket, user }  = req.ctx;
+    const resourceName      = req.params.resource;
+    const resource          = pocket.resource(resourceName).withContext({ user: user, request: req })
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);
@@ -48,11 +48,11 @@ function preloadResource(req, res, next) {
 
 /**
  * Returns a single record
- * 
+ *
  * GET /:resource/:id
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const getOne = Handler(async (req, res) => {
     const id        = req.params.id;
@@ -64,22 +64,22 @@ const getOne = Handler(async (req, res) => {
 
     if (userId && record._createdBy != userId)
         throw RESOURCE_NOT_FOUND;
-    
+
     res.json(record);
 });
-    
+
 /**
  * Returns the complete list of records for a given resource
- * 
+ *
  * GET /:resource
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const getAll = Handler(async (req, res) => {
     const { page, pageSize } = req.query;
     const { userId }         = req.params;
-    
+
     const paginationOptions = {};
     if (isNumeric(pageSize)) {
         paginationOptions.pageSize = Number(pageSize);
@@ -87,7 +87,7 @@ const getAll = Handler(async (req, res) => {
             paginationOptions.page = Number(page);
         }
     }
-    
+
     let query = {};
     if (userId) {
         query._createdBy = userId;
@@ -99,11 +99,11 @@ const getAll = Handler(async (req, res) => {
 
 /**
  * Create a new record
- * 
+ *
  * POST /:resource
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const createOne = Handler(async (req, res) => {
     const userId = req.params.userId;
@@ -113,16 +113,16 @@ const createOne = Handler(async (req, res) => {
 
 /**
  * Attach a file to a rectod
- * 
+ *
  * POST /:resource/:id/attachments
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const attachFile = Handler((req, res) => {
     const id        = req.params.id;
     const resource  = req.resource;
-    
+
     let deferred = Q.defer();
     let busboy = new Busboy({ headers: req.headers });
     let promises = [];
@@ -155,11 +155,11 @@ const attachFile = Handler((req, res) => {
 
 /**
  * Download an attachment
- * 
+ *
  * GET /:resource/:id/attachments/:attachmentId
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const downloadAttachment = Handler(async (req, res) => {
     const id        = req.params.id;
@@ -188,11 +188,11 @@ const downloadAttachment = Handler(async (req, res) => {
 
 /**
  * Delete an attachment
- * 
+ *
  * Delete /:resource/:id/attachments/:attachmentId
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const deleteAttachment = Handler(async (req, res) => {
     const id        = req.params.id;
@@ -204,11 +204,11 @@ const deleteAttachment = Handler(async (req, res) => {
 
 /**
  * Update a new record
- * 
+ *
  * POST /:resource/:id
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const updateOne = Handler(async (req, res) => {
     const id    = req.params.id;
@@ -219,11 +219,11 @@ const updateOne = Handler(async (req, res) => {
 
 /**
  * Removes a record
- * 
+ *
  * DELETE /:resource:/:id
- * 
- * @param {*} req 
- * @param {*} res 
+ *
+ * @param {*} req
+ * @param {*} res
  */
 const removeOne = Handler(async (req, res) => {
     const id    = req.params.id;

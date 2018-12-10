@@ -2,9 +2,9 @@ const { Router }       = require("express");
 const bodyParser       = require("body-parser");
 const _                = require("lodash");
 const session          = require("./session");
-const { 
-    Error, 
-    INVALID_USERNAME_PW, 
+const {
+    Error,
+    INVALID_USERNAME_PW,
     UNAUTHORIZED }   = require("../utils/errors");
 
 const DEFAULT_PERMISSIONS = {
@@ -33,7 +33,7 @@ module.exports = function (pocket) {
             if (!req.body.password || !req.body.username) {
                 throw INVALID_USERNAME_PW;
             }
-            
+
             const groups = req.body.groups || [ userGroups.USERS ];
             const adminRegistration = _.find(groups, grp => pocket.users.isAdminGroup(grp));
             if (adminRegistration) {
@@ -55,7 +55,7 @@ module.exports = function (pocket) {
             Error.fromException(e).send(res);
         }
     })
-    
+
     router.post("/logout", (req, res) => {
         res.json({
             token: null
@@ -76,22 +76,23 @@ module.exports = function (pocket) {
     });
 
     router.get("/refresh", authenticate, (req, res) => {
-        if (!req.user) {
+        const user = _.get(req, 'ctx.user');
+        if (!user) {
             return UNAUTHORIZED.send(res);
         }
         return res.json({
             authenticated: true,
-            token: req.user.jwt(),
-            user: req.user.toPlainObject()
+            token: user.jwt(),
+            user: user.toPlainObject()
         });
     })
 
     router.get("/status", authenticate, (req, res) => {
         return res.json({
-            authenticated: !!req.user,
-            user: req.user && req.user.toPlainObject()
+            authenticated: !!user,
+            user: user && user.toPlainObject()
         });
     })
-    
+
     return router;
 };

@@ -22,15 +22,17 @@ class DiskAdapter extends BaseAdapter {
     }
 
     /**
-     * Make specified field unique
+     * Make specified field an index
      *
      * @param {string} collection
      * @param {string} fieldName
+     * @param {object} options
      * @memberof BaseAdapter
      */
-    setUniqueField(collection, fieldName) {
+    setIndex(collection, fieldName, opts = { unique: false }) {
         const db = this._getDB(collection);
-        db.ensureIndex({ fieldName, unique: true }, (err) => {
+        const unique = !!opts.unique;
+        db.ensureIndex({ fieldName, unique }, (err) => {
             if (err) {
                 logger.error(err)
             }
@@ -43,12 +45,12 @@ class DiskAdapter extends BaseAdapter {
      * @param {string} collection
      * @param {object} query
      * @param {object} opts
-     * @param {number} opts.skip 
+     * @param {number} opts.skip
      * @param {number} opts.limit
      * @returns
      * @memberof DiskAdapter
      */
-    async find (collection, query, opts) {
+    find (collection, query, opts) {
         let db          = this._getDB(collection);
         let transaction = db.find(query);
 
@@ -59,15 +61,34 @@ class DiskAdapter extends BaseAdapter {
             transaction = transaction.limit(opts.limit);
         }
 
-        let exec = promisify(transaction.exec, transaction);
-        return exec();
+        return promisify(transaction.exec, transaction)();
+    }
+
+    /**
+     * Iterate over records
+     *
+     * @param {*} collection
+     * @param {*} query
+     * @param {*} opts
+     * @returns
+     * @memberof MongoAdapter
+     */
+    each(collection, query, opts) {
+        return {
+            do: async (fn) => {
+                const items = await this.find(collection, query, { ...opts, cursor: true });
+                for (let i = 0; i < items.length; ++i) {
+                    await fn(items[i]);
+                }
+            }
+        }
     }
 
     /**
      * Inserts a record into the collection
-     * 
-     * @param {string} collection 
-     * @param {object} payload 
+     *
+     * @param {string} collection
+     * @param {object} payload
      */
     async insert (collection, payload) {
         let db      = this._getDB(collection);
@@ -78,11 +99,11 @@ class DiskAdapter extends BaseAdapter {
 
     /**
      * Updates records specified by the query
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} operations 
-     * @param {object} opts 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} operations
+     * @param {object} opts
      * @param {boolean} opts.multi
      */
     async update (collection, query, operations, opts = {}) {
@@ -104,10 +125,10 @@ class DiskAdapter extends BaseAdapter {
 
     /**
      * Remove one or multiple records
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} options 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} options
      * @param {object} options.multi
      */
     async remove (collection, query, options = { multi: true }) {

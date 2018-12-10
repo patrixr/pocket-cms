@@ -5,7 +5,7 @@ db_test
 .cache
 .vscode
 admin_dist
-dist_admin
+dist
 
 # Logs
 logs

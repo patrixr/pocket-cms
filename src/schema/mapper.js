@@ -34,7 +34,7 @@ class JsonSchemaBuilder {
           if (!items) {
               return ARRAY(minItems);
           }
-          return ARRAY_OF(this.convertProp(items));  
+          return ARRAY_OF(this.convertProp(items));
       },
       map: ({ items }) => {
         return MAP_OF(this.convertProp(items));

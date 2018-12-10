@@ -1,6 +1,7 @@
 const { Router }       = require("express");
 const handlers         = require("./handlers");
 const bodyParser       = require("body-parser");
+const policies         = require('./policies');
 const env              = require("../utils/env");
 const config           = require("../utils/config");
 const { 
@@ -20,36 +21,48 @@ module.exports = function (pocket) {
     const prefix = (endpoint) => `(/users/:userId)?${endpoint}`
 
     router.use(bodyParser.json());
-    router.use('(/users/:userId)?/:resource', (req, res, next) => {
-        const { resource } = req.params;
+    router.use((req, res, next) => {
+        // Attach pocket to request
+        req.ctx = req.ctx || {};
+        req.ctx.pocket = pocket;
+        next();
+    });
+    router.use('(/users/:userId)?/:resource', policies.middleware());
+    // router.use('(/users/:userId)?/:resource', (req, res, next) => {
+    //     const { resource } = req.params;
 
-        req.pocket = pocket;
+    //     req.pocket = pocket;
 
-        if (env() === "test" && config.testing.disableAuthentication) {
-            return next();
-        }
-        
-        if (!req.user) {
-            return UNAUTHORIZED.send(res);
-        }
+    //     if (env() === "test" && config.testing.disableAuthentication) {
+    //         return next();
+    //     }
 
-        if (pocket.users.isAdmin(req.user)) {
-            return next();
-        }
+    //     if (!req.user) {
+    //         return UNAUTHORIZED.send(res);
+    //     }
 
-        const action = ACTION_MAP[req.method.toUpperCase()];
-        const schema = pocket.schemaOf(resource);
+    //     if (req.user.isAdmin(req.user)) {
+    //         return next();
+    //     }
 
-        if (schema && schema.userIsAllowed(req.user, action)) {
-            return next();
-        }
+    //     if (/^_/.test(resource)) {
+    //         // Private cms resource
+    //         return FORBIDDEN.send(res);
+    //     }
 
-        if (req.user.isAllowed(action, resource)) {
-            return next();
-        }
+    //     const action = ACTION_MAP[req.method.toUpperCase()];
+    //     const schema = pocket.schemaOf(resource);
 
-        return FORBIDDEN.send(res);
-    })
+    //     if (schema && schema.userIsAllowed(req.user, action)) {
+    //         return next();
+    //     }
+
+    //     if (req.user.isAllowed(action, resource)) {
+    //         return next();
+    //     }
+
+    //     return FORBIDDEN.send(res);
+    // })
     router.use(prefix("/:resource"), handlers.preloadResource);
     router.get(prefix("/:resource/:id/attachments/:attachmentId"), handlers.downloadAttachment);
     router.delete(prefix("/:resource/:id/attachments/:attachmentId"), handlers.deleteAttachment);

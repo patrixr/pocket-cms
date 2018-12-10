@@ -1,10 +1,14 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-transform-runtime": "^7.1.0",
     "@vue/component-compiler-utils": "^2.3.0",
+    "babel-core": "^7.1.6",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "esdoc": "^1.1.0",
@@ -21,16 +25,21 @@
   },
   "scripts": {
     "serve": "node bin/serve.js",
-    "serve:watch": "nodemon bin/serve.js --ignore 'admin_dist'",
+    "serve:watch": "nodemon bin/serve.js",
     "test": "mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
-    "document": "esdoc"
+    "document": "esdoc",
+    "build": "parcel build src/admin/frontend/index.html --out-dir dist/admin --public-url /admin",
+    "dev": "PARCEL_DEV=true parcel src/admin/frontend/index.html --out-dir dist/admin",
+    "prepublish": "npm run build"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "busboy": "^0.2.14",
+    "element-ui": "^2.4.11",
     "express": "^4.16.2",
     "jsonschema": "^1.2.2",
     "jsonwebtoken": "^8.3.0",
@@ -38,6 +47,7 @@
     "log4js": "^2.5.2",
     "mkdirp": "^0.5.1",
     "mmmagic": "^0.5.0",
+    "modifyjs": "^0.3.1",
     "mongodb": "^3.1.7",
     "nedb": "^1.8.0",
     "parcel-bundler": "^1.10.3",
@@ -46,6 +56,7 @@
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.1",
     "vue-router": "^3.0.1",
+    "vue-store": "^0.3.1-moved",
     "vuex": "^3.0.1"
   }
 }

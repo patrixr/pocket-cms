@@ -1,0 +1,43 @@
+$html-font-size-lg: 16px;
+$html-font-size-md: 15px;
+$html-font-size-sm: 14px;
+$html-font-size-xs: 13px;
+
+$paragraph-font-size-lg: 18px;
+$paragraph-font-size-md: 16px;
+$paragraph-font-size-sm: 14px;
+$paragraph-font-size-xs: 12px;
+
+html {
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+  font-size: $html-font-size-lg;
+  line-height: 23px;
+
+  @media (max-width: 1024px) {
+      font-size: $html-font-size-md;
+  }
+
+  @media (max-width: 640px) {
+      font-size: $html-font-size-sm;
+  }
+
+  @media (max-width: 480px) {
+      font-size: $html-font-size-xs;
+  }
+}
+
+p {
+  font-size: $paragraph-font-size-lg;
+
+  @media (max-width: 1024px) {
+      font-size: $paragraph-font-size-md;
+  }
+
+  @media (max-width: 640px) {
+      font-size: $paragraph-font-size-sm;
+  }
+
+  @media (max-width: 480px) {
+      font-size: $paragraph-font-size-xs;
+  }
+}

@@ -25,7 +25,7 @@ class MongoAdapter extends BaseAdapter {
         }
 
         let deferred = Q.defer();
-        
+
         this.client = new MongoClient(this.url, { useNewUrlParser: true });
         this.client.connect((err, client) => {
             assert.equal(null, err);
@@ -39,15 +39,17 @@ class MongoAdapter extends BaseAdapter {
     }
 
     /**
-     * Make specified field unique
+     * Make specified field an index
      *
      * @param {string} collection
      * @param {string} fieldName
      * @memberof BaseAdapter
      */
-    setUniqueField(collection, fieldName) {
-        const store = this.db.collection(collection);
-        store.createIndex({ [fieldName] : 1 },  { unique: true });
+    setIndex(collection, fieldName, opts = { unique: false }) {
+        const store     = this.db.collection(collection);
+        const unique    = !!opts.unique;
+
+        store.createIndex({ [fieldName] : 1 },  { unique });
     }
 
     /**
@@ -56,12 +58,12 @@ class MongoAdapter extends BaseAdapter {
      * @param {string} collection
      * @param {object} query
      * @param {object} opts
-     * @param {number} opts.skip 
+     * @param {number} opts.skip
      * @param {number} opts.limit
      * @returns
      * @memberof DiskAdapter
      */
-    async find(collection, query, opts = {}) {
+    find(collection, query, opts = {}) {
         let store       = this.db.collection(collection);
         let transaction = store.find(query);
 
@@ -72,14 +74,38 @@ class MongoAdapter extends BaseAdapter {
             transaction = transaction.limit(opts.limit);
         }
 
-        return await transaction.toArray();
+        if (opts.cursor) {
+            return transaction;
+        } else {
+            return transaction.toArray();
+        }
+    }
+
+    /**
+     * Iterate over records
+     *
+     * @param {*} collection
+     * @param {*} query
+     * @param {*} opts
+     * @returns
+     * @memberof MongoAdapter
+     */
+    each(collection, query, opts) {
+        const cursor = this.find(collection, query, { ...opts, cursor: true });
+        return {
+            async do(fn) {
+                while(await cursor.hasNext()) {
+                    await fn(await cursor.next());
+                }
+            }
+        }
     }
 
     /**
      * Inserts a record into the collection
-     * 
-     * @param {string} collection 
-     * @param {object} payload 
+     *
+     * @param {string} collection
+     * @param {object} payload
      */
     async insert (collection, payload) {
         let store   = this.db.collection(collection);
@@ -90,11 +116,11 @@ class MongoAdapter extends BaseAdapter {
 
     /**
      * Updates records specified by the query
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} operations 
-     * @param {object} opts 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} operations
+     * @param {object} opts
      * @param {boolean} opts.multi
      */
     async update (collection, query, operations, opts = {}) {
@@ -102,7 +128,7 @@ class MongoAdapter extends BaseAdapter {
         const options       = _.extend({ returnUpdatedDocs: true, multi: true }, opts);
 
         if (options.multi) {
-            const ids           = await this.find(collection, query).map(r => r._id);
+            const ids           = (await this.find(collection, query)).map(r => r._id);
             const matchesIds    = {_id: {$in: ids}};
             await store.updateMany(matchesIds, operations);
             return store.find(matchesIds).toArray();
@@ -114,10 +140,10 @@ class MongoAdapter extends BaseAdapter {
 
     /**
      * Remove one or multiple records
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} options 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} options
      * @param {object} options.multi
      */
     async remove (collection, query, options = { multi: true }) {

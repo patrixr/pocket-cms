@@ -5,14 +5,26 @@ class BaseAdapter {
     }
 
     /**
-     * Make specified field unique
+     * Make specified field an index
      *
      * @param {string} collection
      * @param {string} fieldName
      * @memberof BaseAdapter
      */
-    setUniqueField(collection, fieldName) {
+    setIndex(collection, fieldName, opts = { unique: false }) {
         throw 'Not Implemented'
+    }
+
+    /**
+     *
+     *
+     * @param {*} collection
+     * @param {*} query
+     * @param {*} opts
+     * @memberof BaseAdapter
+     */
+    each(collection, query, opts) {
+        throw 'Not Implemented';
     }
 
     /**
@@ -21,7 +33,7 @@ class BaseAdapter {
      * @param {string} collection
      * @param {object} query
      * @param {object} opts
-     * @param {number} opts.skip 
+     * @param {number} opts.skip
      * @param {number} opts.limit
      * @returns
      * @memberof DiskAdapter
@@ -32,9 +44,9 @@ class BaseAdapter {
 
     /**
      * Inserts a record into the collection
-     * 
-     * @param {string} collection 
-     * @param {object} payload 
+     *
+     * @param {string} collection
+     * @param {object} payload
      */
     async insert (collection, payload) {
         throw 'Not Implemented';
@@ -42,11 +54,11 @@ class BaseAdapter {
 
     /**
      * Updates records specified by the query
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} operations 
-     * @param {object} opts 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} operations
+     * @param {object} opts
      * @param {boolean} opts.multi
      */
     async update (collection, query, operations, opts) {
@@ -55,10 +67,10 @@ class BaseAdapter {
 
     /**
      * Remove one or multiple records
-     * 
-     * @param {string} collection 
-     * @param {object} query 
-     * @param {object} options 
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @param {object} options
      * @param {object} options.multi
      */
     async remove (collection, query, options) {

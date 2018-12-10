@@ -61,7 +61,9 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     "age": {"type": "number"},
                     "username": {
                         "type": "string",
-                        "unique": true
+                        "index": {
+                            unique: true
+                        }
                     }
                 });
                 pocket = new Pocket(config);
@@ -319,21 +321,16 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     beforeTriggered = true;
                 });
 
-                schema.after("update", async ({ records, query, operations }, ctx) => {
+                schema.after("update", async ({ query, operations }, ctx) => {
                     expect(ctx).to.exist;
-                    expect(records).to.exist;
                     expect(query).to.exist;
                     expect(operations).to.exist;
-                    expect(records[0].username).to.equal("Hulk");
-
-                    records[0].username = "Batman";
                     afterTrigerred = true;
                 });
 
                 user = await resource.mergeOne(user._id, { firstname: "vlad" });
                 expect(beforeTriggered).to.be.true;
                 expect(afterTrigerred).to.be.true;
-                expect(user.username).to.equal("Batman");
             });
 
             it("Should allow before and after remove hook", async () => {
@@ -367,22 +364,22 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 let wasCreated = false;
                 let wasSaved = false;
 
-                schema.before("create", async ({ payload }, ctx) => {
+                schema.before("create", async ({ record }, ctx) => {
                     expect(ctx).to.exist;
-                    expect(payload).not.to.be.null;
-                    expect(payload.firstname).to.equal("john");
-                    expect(payload.username).to.equal("test");
+                    expect(record).not.to.be.null;
+                    expect(record.firstname).to.equal("john");
+                    expect(record.username).to.equal("test");
                     wasCreated = true;
-                    payload.username = payload.username + "!"
+                    record.username = record.username + "!"
                 });
 
-                schema.before("save", async ({ payload }, ctx) => {
+                schema.before("save", async ({ record }, ctx) => {
                     expect(ctx).to.exist;
-                    expect(payload).not.to.be.null;
-                    expect(payload.firstname).to.equal("john");
-                    expect(payload.username).to.equal("test!");
+                    expect(record).not.to.be.null;
+                    expect(record.firstname).to.equal("john");
+                    expect(record.username).to.equal("test!");
                     wasSaved = true;
-                    payload.username = payload.username + "@"
+                    record.username = record.username + "@"
                 });
 
                 let user = await resource.create({ username: "test", firstname: "john" });

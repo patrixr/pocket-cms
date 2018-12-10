@@ -1,11 +1,12 @@
-const env              = require("./utils/env");
-const _                = require("lodash");
-const { Error }        = require("./utils/errors");
+const env               = require("./utils/env");
+const _                 = require("lodash");
+const { Error }         = require("./utils/errors");
+const modify            = require('modifyjs');
 
-const reservedProperties = [ 
+const reservedProperties = [
     "_id",
     "_createdBy",
-    "_createdAt", 
+    "_createdAt",
     "_updatedAt",
     "_attachments"
 ];
@@ -31,16 +32,16 @@ class Resource {
 
         // ---- Unique Fields
         this.store.ready().then(() => {
-            _.each(this.getUniqueKeys(), (key) => {
-                this.store.setUniqueField(name, key);
+            _.each(this.getIndices(), ({ field, unique }) => {
+                this.store.setIndex(this.name, field, { unique: !!unique });
             })
         });
     }
 
     // ---- Helpers
 
-    getUniqueKeys() {
-        return this.schema ? this.schema.uniqueKeys() : [];
+    getIndices() {
+        return this.schema ? this.schema.indices() : [];
     }
 
     async validate(data, opts = {}) {
@@ -97,8 +98,8 @@ class Resource {
      * @returns
      * @memberof Resource
      */
-    get(id) {
-        return this.findOne({ _id: id });
+    get(id, opts) {
+        return this.findOne({ _id: id }, opts);
     }
 
     /**
@@ -112,7 +113,7 @@ class Resource {
     async findOne(query = {}, options = {}) {
         await this.pocket.ready();
 
-        let records = await this.find(query, _.extend({}, options,{ pageSize: 1 }));
+        let records = await this.find(query, _.extend({}, options, { pageSize: 1 }));
         return records[0] || null;
     }
 
@@ -127,7 +128,7 @@ class Resource {
     async find(query = {}, opts = {}) {
         await this.pocket.ready();
 
-        await this.runHooks({ query, options : opts }).before('find');
+        await this.runHooks({ query, options : opts }).before('find', 'read');
 
         let params = {};
         if (_.isNumber(opts.pageSize)) {
@@ -139,9 +140,9 @@ class Resource {
         }
 
         let records = await this.store.find(this.name, query, params)
-        
-        await this.runHooks({ records, query, options : opts }).after('find');
-         
+
+        await this.runHooks({ records, query, options : opts }).after('find', 'read');
+
         return records;
     }
 
@@ -159,10 +160,10 @@ class Resource {
         let userId  = opts.userId || (this.context.user && this.context.user.id);
         let data    = await this.validate(payload);
 
-        await this.runHooks({ payload: data }).before('create', 'save');
+        await this.runHooks({ record: data }).before('create', 'save');
 
         data._createdAt = Date.now();
-        data._updatedAt = data._createdAt 
+        data._updatedAt = data._createdAt
         data._attachments = [];
         data._createdBy = userId || null;
 
@@ -204,15 +205,33 @@ class Resource {
     async update(query, operations, options = {}) {
         await this.pocket.ready();
 
-        const opts = _.extend({ returnUpdatedDocs : true, multi: true }, options);
+        const opts = _.extend({ multi: true }, options);
 
-        await this.runHooks({ query, operations }).before('update', 'save');
+        await this.runHooks({ query, operations }).before('update');
 
-        const result    = await this.store.update(this.name, query, operations, opts);
-        const records   = _.isArray(result) ? result : [result];
-        await this.runHooks({ query, operations, records }).after('update', 'save');
+        await this.store.each(this.name, query, opts).do(async (record) => {
+            const updatedRecord = modify(record, operations);
+            await this.runHooks({ oldRecord: record, record: updatedRecord }).before('save');
+            await this.store.update(this.name, { _id: record._id }, { $set: updatedRecord });
+            await this.runHooks({ record: updatedRecord, query, operations }).after('update', 'save');
+            return updatedRecord;
+        });
 
-        return result;
+        
+        // await this.runHooks({ query, operations }).before('update', 'save');
+
+        // const result    = await this.store.update(this.name, query, operations, opts);
+        // const records   = _.isArray(result) ? result : [result];
+        // await this.runHooks({ query, operations, records }).after('update', 'save');
+
+        // return result;        // resource.js
+        // // await iterate(this.collection, query, opts).forEach(async (record) => {
+        // //     // do studf with record
+        // //     const payload = applyUpdateOps(record, operations);
+        // //     this.runHooks('before', 'save', { payload, oldRecord: record });
+        // //     await this.store.save({ _id: payload._id }, { $set: payload });
+        // //     this.runHooks('before', 'save', { payload });
+        // // });
     }
 
     /**
@@ -224,9 +243,10 @@ class Resource {
      * @memberof Resource
      */
     async updateOne(id, operations) {
-        return this.update({ _id: id }, operations, { multi: false });
+        await this.update({ _id: id }, operations, { multi: false });
+        return this.get(id);
     }
-    
+
     /**
      * Deletes a record by it's ID
      *
@@ -276,18 +296,18 @@ class Resource {
     }
 
     /**
-     * 
-     * 
+     *
+     *
      * @param {String} recordId
-     * @param {String} name 
-     * @param {Stream|String} file 
+     * @param {String} name
+     * @param {Stream|String} file
      * @memberof Resource
      */
     async attach(recordId, name, file) {
         await this.pocket.ready();
 
         let result = await this.attachments.save(name, file);
-        
+
         let att = _.extend({}, result, {
             name:   name,
             id:     result.file
@@ -298,9 +318,9 @@ class Resource {
 
 
     /**
-     * 
-     * @param {String} recordId 
-     * @param {String} attachmentId 
+     *
+     * @param {String} recordId
+     * @param {String} attachmentId
      */
     async deleteAttachment(recordId, attachmentId) {
         await this.pocket.ready();
@@ -319,14 +339,14 @@ class Resource {
 
         await this.attachments.delete(attachmentId);
 
-        let $pull = { _attachments: { id: attachmentId } }; 
-        return this.updateOne(recordId, { $pull });
+        record._attachments = record._attachments.filter(att => att.id !== attachmentId);
+        return this.mergeOne(recordId, record, { skipValidation: true });
     }
 
     /**
-     * 
-     * 
-     * @param {String} attachmentId 
+     *
+     *
+     * @param {String} attachmentId
      * @returns {Stream}
      * @memberof Resource
      */

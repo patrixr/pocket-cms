@@ -10,6 +10,9 @@ const { UserManager }  = require("./users");
 const session          = require('./authentication/session');
 const admin            = require('./admin');
 const Schema           = require("./schema");
+const {
+    INTERNAL_ERROR
+} = require('./utils/errors');
 
 
 /**
@@ -29,7 +32,7 @@ class Pocket {
         // --- Setup database
         this.jsonStore = stores.createJsonStore(this);
         this.fileStore = stores.createFileStore(this);
-        this.initialization = Q.all([ 
+        this.initialization = Q.all([
             this.jsonStore.ready(),
             this.fileStore.ready()
         ]);
@@ -47,10 +50,14 @@ class Pocket {
     }
 
 
-    
+    get Schema() {
+        return Schema;
+    }
+
+
     /**
      * Gets the CMS configuration
-     * 
+     *
      * @memberof CMS
      */
     config() {
@@ -61,9 +68,9 @@ class Pocket {
 
     /**
      * Create or get a resource
-     * 
-     * @param {*} name 
-     * @param {*} schema 
+     *
+     * @param {*} name
+     * @param {*} schema
      * @memberof CMS
      */
     resource(name, schema) {
@@ -98,12 +105,23 @@ class Pocket {
 
     /**
      * Sets up the routes
-     * 
+     *
      * @returns {Express} app an express app
      * @memberof CMS
      */
     middleware() {
         let app = express();
+
+        app.use((req, res, next) => {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            next();
+        });
+
+        app.options("*", (req, res) => {
+            res.status(200).send();
+        });
 
         app.use(session(this));
 
@@ -111,9 +129,9 @@ class Pocket {
         app.use("/users", authentication(this));
 
         // Auto-generated rest api
-        app.use("/rest", rest(this));     
-        
-        app.use("/admin", admin(this));     
+        app.use("/rest", rest(this));
+
+        app.use("/admin", admin(this));
 
         return app;
     }
@@ -141,7 +159,5 @@ class Pocket {
     }
 
 }
-
-Pocket.Schema = Schema;
 
 module.exports = Pocket;

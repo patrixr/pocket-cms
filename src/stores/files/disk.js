@@ -5,13 +5,13 @@ const Q                = require('q');
 const uuid             = require('uuid/v1');
 const { promisify }    = require('../../utils/helpers');
 const mkdirp           = require('mkdirp');
-const { 
+const {
     MAGIC_MIME_TYPE,
     Magic }        = require('mmmagic');
 
 /**
- * 
- * 
+ *
+ *
  * @export
  * @class DiskStore
  */
@@ -19,8 +19,8 @@ class DiskStore {
 
     /**
      * Creates an instance of DiskStore.
-     * 
-     * @param {String} uploadFolder 
+     *
+     * @param {String} uploadFolder
      * @memberof DiskStore
      */
     constructor({ uploadFolder }) {
@@ -62,9 +62,9 @@ class DiskStore {
 
     /**
      * Saves the incoming stream into a file
-     * 
-     * @param {String} filename 
-     * @param {Stream} istream 
+     *
+     * @param {String} filename
+     * @param {Stream} istream
      * @memberof DiskStore
      */
     saveStream(filename, istream) {
@@ -84,10 +84,10 @@ class DiskStore {
     }
 
     /**
-     * 
-     * 
-     * @param {String} filename 
-     * @param {String} filepath 
+     *
+     *
+     * @param {String} filename
+     * @param {String} filepath
      * @memberof DiskStore
      */
     saveFile(filename, filepath) {
@@ -100,9 +100,9 @@ class DiskStore {
     }
 
     /**
-     * 
-     * @param {String} filename 
-     * @param {String|Stream} streamOrFile 
+     *
+     * @param {String} filename
+     * @param {String|Stream} streamOrFile
      */
     save(filename, streamOrFile) {
         if (_.isString(streamOrFile)) {
@@ -115,9 +115,9 @@ class DiskStore {
     }
 
     /**
-     * 
-     * 
-     * @param {String} filename 
+     *
+     *
+     * @param {String} filename
      * @returns {Stream}
      * @memberof DiskStore
      */
@@ -127,9 +127,9 @@ class DiskStore {
     }
 
     /**
-     * 
-     * 
-     * @param {any} filename 
+     *
+     *
+     * @param {any} filename
      * @memberof DiskStore
      */
     delete(filename) {

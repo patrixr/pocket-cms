@@ -14,4 +14,4 @@ server.use(pocket.middleware());
 
 server.listen(port, () => {
     logger.info(`Server running on port ${port}`);
-}); 
+});

@@ -1,22 +1,24 @@
-const bcrypt               = require("bcrypt")
+const crypto               = require("./utils/crypto")
 const Q                    = require("q")
 const _                    = require("lodash")
 const jwt                  = require("jsonwebtoken")
 const config               = require("./utils/config")
-const { 
+const Schema               = require('./schema')
+const {
     INVALID_USER_GROUP,
     INVALID_USERNAME_PW,
     SESSION_EXPIRED,
-    USERNAME_TAKEN, 
-    UNAUTHORIZED, 
+    USERNAME_TAKEN,
+    UNAUTHORIZED,
     INTERNAL_ERROR }   = require("./utils/errors")
 
 
 class User {
 
-    constructor(resource, config) {
+    constructor(userManager, config) {
         this.config             = config;
-        this.resource           = resource;
+        this.userManager        = userManager;
+        this.resource           = userManager.resource;
         this.id                 = null;
         this.hash               = null;
         this.username           = null;
@@ -67,6 +69,10 @@ class User {
             return _.find(allowedActions, (it) => it === action);
         });
     }
+
+    isAdmin() {
+        return this.userManager.isAdmin(this);
+    }
 }
 
 class UserManager {
@@ -74,7 +80,7 @@ class UserManager {
     constructor(pocket) {
         this.pocket     = pocket;
         this.config     = pocket.config();
-        this.resource   = pocket.resource("_users", {
+        this.schema     = new Schema({
             "username": "string",
             "password": "password",
             "groups": {
@@ -89,11 +95,27 @@ class UserManager {
                 "type": "map",
                 "items": {
                     "type": "array",
-                    "itemSchema": { "type" : "string" }
+                    "items": { "type" : "string" }
                 }
             }
-        });
+        })
+        // .after('read', async ({ records, opts = {} }) => {
+        //     if (!opts.rawObject) {
+        //         _.each(records, r => {
+        //             delete r.hash;
+        //             delete r.password;
+        //         });
+        //     }
+        // })
+        // .before('save', async ({ record }) => {
+        //     if (record.password) {
+        //         record.hash = await crypto.hash(record.password);
+        //     }
+        //     delete payload.password;
+            
+        // });
 
+        this.resource   = pocket.resource("_users", this.schema);
         this.ENFORCE_VALID_GROUP = false;
     }
 
@@ -113,25 +135,23 @@ class UserManager {
     // ---- METHODS
 
     hashPassword(password) {
-        const saltRounds = 3;
-        return bcrypt
-            .hash(password, saltRounds)
+        return crypto.hash(password)
     }
 
     /**
      * Tries to load an existing user
-     * 
-     * @param {*} username 
-     * @param {*} password 
+     *
+     * @param {*} username
+     * @param {*} password
      */
     async auth(username, password) {
         const userRecord = await this.resource.findOne({ username : username });
         if (!userRecord) throw INVALID_USERNAME_PW;
 
-        const valid = await bcrypt.compare(password, userRecord.hash);
+        const valid = await crypto.compare(password, userRecord.hash);
         if (!valid) throw INVALID_USERNAME_PW;
 
-        let user            = new User(this.resource, this.config);
+        let user            = new User(this, this.config);
         user.username       = userRecord.username;
         user.groups         = userRecord.groups;
         user.hash           = userRecord.hash;
@@ -143,8 +163,8 @@ class UserManager {
 
     /**
      * Creates a new user (does not save it)
-     * 
-     * @param {*} username 
+     *
+     * @param {*} username
      * @param {*} password
      * @param {*} groups
      * @returns {User} a new user
@@ -166,8 +186,8 @@ class UserManager {
         if (existing) {
             throw USERNAME_TAKEN;
         }
-        
-        let user            = new User(this.resource, this.config);
+
+        let user            = new User(this, this.config);
         user.username       = username;
         user.groups         = groups;
         user.permissions    = permissions;
@@ -178,10 +198,10 @@ class UserManager {
 
     /**
      * Create a User from the db object
-     * @param {*} record 
+     * @param {*} record
      */
     fromRecord(record) {
-        let user            = new User(this.resource, this.config);
+        let user            = new User(this, this.config);
         user.id             = record._id;
         user.groups         = record.groups;
         user.username       = record.username;
@@ -192,7 +212,7 @@ class UserManager {
 
     /**
      * Returns the list of admins
-     *  
+     *
      * @memberof UserManager
      */
     async getAdmins() {
@@ -202,10 +222,10 @@ class UserManager {
 
     /**
      * Checks if a group has admin rights
-     * 
+     *
      * @static
-     * @param {any} user 
-     * @returns 
+     * @param {any} user
+     * @returns
      * @memberof UserManager
      */
     isAdminGroup(group) {
@@ -214,10 +234,10 @@ class UserManager {
 
     /**
      * Checks if a group has admin rights
-     * 
+     *
      * @static
-     * @param {any} group 
-     * @returns 
+     * @param {any} group
+     * @returns
      * @memberof UserManager
      */
     isAdmin(user) {

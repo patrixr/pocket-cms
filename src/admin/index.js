@@ -1,25 +1,29 @@
-const Bundler                  = require('parcel-bundler');
-const express                  = require('express');
-const env                      = require('../utils/env');
+const express       = require("express");
+const _             = require("lodash");
+const { FORBIDDEN } = require("../utils/errors");
 
-const OUT_DIR = __dirname + '/dist_admin';
+module.exports = function(pocket) {
+  let router = express.Router();
 
-module.exports = function (pocket) {
-    let router          = express.Router();
-
-    if (env() !== "test") {
-        const bundler = new Bundler(__dirname + '/frontend/index.html', {
-            outDir: OUT_DIR,
-            publicUrl: '/admin'
-        });
-        const completeBundle = bundler.bundle();
-        const serve = express.static(OUT_DIR);
-
-        router.use(async (req, res) => {
-            await completeBundle;
-            serve(req, res);
-        });
+  const adminOnly = (req, res, next) => {
+    const user = _.get(req, "ctx.user");
+    if (!user || !user.isAdmin()) {
+      return FORBIDDEN.send(res);
     }
+    next();
+  }
 
-    return router;
-}
+  router.use("/schemas", adminOnly, (req, res) => {
+    const schemas = _.map(pocket.resources, ({ schema }, name) => {
+      return {
+        name,
+        schema: schema.fields
+      };
+    });
+    res.json(schemas);
+  });
+
+  router.use(express.static("dist/admin"));
+
+  return router;
+};
