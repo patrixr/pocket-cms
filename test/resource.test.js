@@ -14,7 +14,7 @@ const setupsToTest = {
         close: (done) => done()
     },
     'MONGO': {
-        config: { 
+        config: {
             datastore: {
                 adapter: "mongo",
                 options: {
@@ -25,7 +25,7 @@ const setupsToTest = {
         },
         bootstrap: (done) => {
             if (isCI()) {
-                return done();  
+                return done();
             }
 
             console.log("Starting mongod");
@@ -144,7 +144,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 .should.be.fulfilled
                 .notify(done);
         })
-        
+
         it("Should attach a file to a record", async () => {
             const record        = await resource.create({ firstname: "John", lastname: "Smith" })
             const file          = path.join(__dirname, 'samples', 'sample_image.png');

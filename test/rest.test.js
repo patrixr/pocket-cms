@@ -475,15 +475,6 @@ describe("Rest", () => {
                 .expect(403);
         })
 
-        it("Should  be allowed to access private CMS resources as admin (e.g /rest/_users)", async () => {
-            const token = await logIn("adminUser", "password");
-
-            await request(TestServer)
-                .get(`/rest/_users`)
-                .set('Authorization', 'Bearer ' + token)
-                .expect(200);
-        })
-
         it("Should permit creating an item after logging in as Admin", async () => {
             const token = await logIn("adminUser", "password");
             await request(TestServer)
@@ -493,6 +484,29 @@ describe("Rest", () => {
                 .expect(200);
         })
 
+        it("Should  be allowed to access private CMS resources as admin (e.g /rest/_users)", async () => {
+            const token = await logIn("adminUser", "password");
+
+            await request(TestServer)
+                .get(`/rest/_users`)
+                .set('Authorization', 'Bearer ' + token)
+                .expect(200);
+        })
+
+        it("Should not receive sensitive user data (password/hash) when fetching users via the raw rest api", async () => {
+            const token = await logIn("adminUser", "password");
+
+            const { body } = await request(TestServer)
+                .get(`/rest/_users`)
+                .set('Authorization', 'Bearer ' + token)
+                .expect(200);
+
+            expect(body).to.be.an('array');
+            _.each(body, user => {
+                expect(_.keys(user)).to.not.include('hash');
+                expect(_.keys(user)).to.not.include('password');
+            });
+        })
     })
 
     describe("User api prefix (/rest/users/:userId/:resource)", () => {

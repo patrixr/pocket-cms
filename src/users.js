@@ -99,21 +99,20 @@ class UserManager {
                 }
             }
         })
-        // .after('read', async ({ records, opts = {} }) => {
-        //     if (!opts.rawObject) {
-        //         _.each(records, r => {
-        //             delete r.hash;
-        //             delete r.password;
-        //         });
-        //     }
-        // })
-        // .before('save', async ({ record }) => {
-        //     if (record.password) {
-        //         record.hash = await crypto.hash(record.password);
-        //     }
-        //     delete payload.password;
-            
-        // });
+        .after('read', async ({ records, options = {} }) => {
+            if (!options.rawObject) {
+                _.each(records, r => {
+                    delete r.hash;
+                    delete r.password;
+                });
+            }
+        })
+        .before('save', async ({ record }) => {
+            if (record.password) {
+                record.hash = await crypto.hash(record.password);
+                delete payload.password;
+            }
+        });
 
         this.resource   = pocket.resource("_users", this.schema);
         this.ENFORCE_VALID_GROUP = false;
@@ -145,7 +144,7 @@ class UserManager {
      * @param {*} password
      */
     async auth(username, password) {
-        const userRecord = await this.resource.findOne({ username : username });
+        const userRecord = await this.resource.findOne({ username }, { rawObject: true });
         if (!userRecord) throw INVALID_USERNAME_PW;
 
         const valid = await crypto.compare(password, userRecord.hash);
@@ -216,7 +215,7 @@ class UserManager {
      * @memberof UserManager
      */
     async getAdmins() {
-        let records = await this.resource.find({ groups: { $elemMatch: this.Groups.ADMINS }});
+        let records = await this.resource.find({ groups: { $elemMatch: this.Groups.ADMINS }}, { rawObject: false });
         return records.map((record) => this.fromRecord(record));
     }
 
