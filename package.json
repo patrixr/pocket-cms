@@ -4,10 +4,10 @@
   "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.1.6",
+    "@babel/core": "^7.0.0-0",
     "@babel/plugin-transform-runtime": "^7.1.0",
     "@vue/component-compiler-utils": "^2.3.0",
-    "babel-core": "^7.1.6",
+    "babel-core": "^7.0.0-0",
     "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
@@ -21,7 +21,14 @@
     "sass-loader": "^6.0.6",
     "supertest": "^3.0.0",
     "url-loader": "^0.6.2",
-    "vue-template-compiler": "^2.5.17"
+    "vue-template-compiler": "^2.5.17",
+    "vue": "^2.5.17",
+    "vue-hot-reload-api": "^2.3.1",
+    "vue-router": "^3.0.1",
+    "vue-store": "^0.3.1-moved",
+    "vuex": "^3.0.1",
+    "element-ui": "^2.4.11",
+    "axios": "^0.18.0"
   },
   "scripts": {
     "serve": "node bin/serve.js",
@@ -35,11 +42,9 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
-    "axios": "^0.18.0",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "busboy": "^0.2.14",
-    "element-ui": "^2.4.11",
     "express": "^4.16.2",
     "jsonschema": "^1.2.2",
     "jsonwebtoken": "^8.3.0",
@@ -52,11 +57,6 @@
     "nedb": "^1.8.0",
     "parcel-bundler": "^1.10.3",
     "q": "^1.5.1",
-    "uuid": "^3.2.1",
-    "vue": "^2.5.17",
-    "vue-hot-reload-api": "^2.3.1",
-    "vue-router": "^3.0.1",
-    "vue-store": "^0.3.1-moved",
-    "vuex": "^3.0.1"
+    "uuid": "^3.2.1"
   }
 }
