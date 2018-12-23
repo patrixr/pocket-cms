@@ -29,21 +29,25 @@ export default new Vuex.Store({
     authToken: getter('authToken')
   },
   actions: {
+
     async loadSchemas(ctx) {
       const schemas = await PocketService
         .withAuth(ctx.state.authToken)
         .fetchSchemas();
       ctx.commit('setSchemas', schemas || []);
     },
+
     async login(ctx, { username, password }) {
       const { user, token } = await PocketService.login(username, password);
       ctx.commit('setUser', user);
       ctx.commit('setAuthToken', token);
       return user;
     },
+
     logout(ctx) {
       ctx.commit('clearUser');
     }
+
   },
   mutations: {
     setSchemas: setter('schemas'),

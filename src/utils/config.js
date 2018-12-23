@@ -3,11 +3,11 @@ const path             = require("path");
 const _                = require("lodash");
 const env              = require("./env");
 const mkdirp           = require("mkdirp");
-const { 
-    stringFromFile 
+const {
+    stringFromFile
 } = require('./helpers');
 
-const cmsFolder     = path.join(os.homedir(),   '.humble');
+const cmsFolder     = path.join(os.homedir(),   '.pocket');
 const secretFile    = path.join(cmsFolder,      `.${env()}.secret`);
 const dataFolder    = path.join(cmsFolder,      `${env()}_db`);
 const uploadFolder  = path.join(dataFolder,     `uploads`);
@@ -15,9 +15,9 @@ const day           = 86400;
 
 mkdirp.sync(cmsFolder);
 
-/**  
+/**
  * Default configuration
- *  
+ *
  */
 module.exports = {
     session: {
@@ -40,4 +40,4 @@ module.exports = {
     testing: {
         disableAuthentication: false
     }
-};  
+};

@@ -6,7 +6,6 @@ const _                = require("lodash");
 const Q                = require("q");
 const { expect }       = require("chai");
 const DiskStore        = require("../src/stores/files/disk");
-const Pocket           = require("../src/pocket");
 
 const uploadFolder = config.filestore.options.uploadFolder;
 
