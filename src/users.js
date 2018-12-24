@@ -81,23 +81,36 @@ class UserManager {
         this.pocket     = pocket;
         this.config     = pocket.config();
         this.schema     = new Schema({
-            "username": "string",
-            "password": "password",
-            "groups": {
-                "type": "array",
-                "items": {
-                    "type": "string"
+            fields: {
+                username: {
+                    type: "string",
+                    index: {
+                        unique: true
+                    }
+                },
+                password: "password",
+                provider: {
+                    type: "string",
+                    default: "local"
+                },
+                groups: {
+                    type: "array",
+                    items: {
+                        type: "string"
+                    }
+                },
+                userData: "object",
+                permissions: {
+                    type: "map",
+                    items: {
+                        type: "array",
+                        items: {
+                            type : "string"
+                        }
+                    }
                 }
             },
-            "hash": "string",
-            "userData": "object",
-            "permissions": {
-                "type": "map",
-                "items": {
-                    "type": "array",
-                    "items": { "type" : "string" }
-                }
-            }
+            additionalProperties: true
         })
         .after('read', async ({ records, options = {} }) => {
             if (!options.rawObject) {
@@ -110,7 +123,7 @@ class UserManager {
         .before('save', async ({ record }) => {
             if (record.password) {
                 record.hash = await crypto.hash(record.password);
-                delete payload.password;
+                delete record.password;
             }
         });
 

@@ -3,8 +3,9 @@ import ElementUI  from 'element-ui'
 import router     from "./router";
 import store      from "./store";
 import App        from './App'
+import locale     from 'element-ui/lib/locale/lang/en'
 
-import locale from 'element-ui/lib/locale/lang/en'
+import './filters'
 import './styles/main.scss'
 import'element-ui/lib/theme-chalk/index.css';
 

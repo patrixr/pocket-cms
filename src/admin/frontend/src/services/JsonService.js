@@ -10,7 +10,6 @@ export class JsonService {
 
   async _request({ path, method = 'GET', params = {}, data = {}, headers = {} }) {
     const url = resolve(this.baseUrl, path);
-    console.log(headers);
     return axios({
       url,
       baseURL: this.baseUrl,
@@ -40,6 +39,24 @@ export class JsonService {
       headers,
       data: body,
       method: 'POST'
+    });
+  }
+
+  async PUT(path, body = {}, headers = {}) {
+    return this._request({
+      path,
+      headers,
+      data: body,
+      method: 'PUT'
+    });
+  }
+
+  async DELETE(path, params = {}, headers = {}) {
+    return this._request({
+      path,
+      params,
+      headers,
+      method: 'DELETE',
     });
   }
 

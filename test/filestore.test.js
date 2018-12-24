@@ -35,7 +35,8 @@ describe("Filestore", () => {
     })
 
     afterEach((done) => {
-        rimraf(uploadFolder, done);
+        rimraf.sync(uploadFolder);
+        done();
     })
 
     it("Should save a file to disk", (done) => {
@@ -52,10 +53,14 @@ describe("Filestore", () => {
             .notify(done)
     })
 
-    it("Should reject saving a bad file", (done) => {
-        filestore.saveFile('image1', './i.dont.exist')
-            .should.be.rejected
-            .notify(done)
+    it("Should reject saving a bad file", async () => {
+        let rejected = false;
+        try {
+            await filestore.saveFile('image1', './i.dont.exist')
+        } catch (e) {
+            rejected = true;
+        }
+        expect(rejected).to.be.true;
     })
 
     it("Should read a file from disk", (done) => {

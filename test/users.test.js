@@ -6,14 +6,16 @@ const Pocket               = require('../src/pocket');
 
 describe("Users", () => {
 
-    let pocket      = new Pocket();
-    let userManager = pocket.users;
+    let pocket      = null;
+    let userManager = null;
 
     function randomName() {
         return "john-" + Math.random()
     }
 
     before((done) => {
+        pocket = new Pocket();
+        userManager = pocket.users;
         userManager.create("john", "123456", userManager.Groups.ADMINS)
             .then(() => done());
     });

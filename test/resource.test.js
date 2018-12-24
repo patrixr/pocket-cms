@@ -56,13 +56,15 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     return done(err);
                 }
                 schema = new Schema({
-                    "firstname": "string",
-                    "lastname": "string",
-                    "age": {"type": "number"},
-                    "username": {
-                        "type": "string",
-                        "index": {
-                            unique: true
+                    fields: {
+                        "firstname": "string",
+                        "lastname": "string",
+                        "age": {"type": "number"},
+                        "username": {
+                            "type": "string",
+                            "index": {
+                                unique: true
+                            }
                         }
                     }
                 });

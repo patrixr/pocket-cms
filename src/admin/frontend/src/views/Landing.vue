@@ -41,13 +41,11 @@ import Validator        from '../utils/validation'
 import router           from '../router'
 import _                from 'lodash'
 import { mapGetters }   from 'vuex'
-import {
-  errorCb,
-  navigateTo
-} from '../utils/callbacks'
+import common           from '../mixins/common'
 
 export default {
   name: "landing",
+  mixins: [ common ],
   data() {
     return {
       formData: {
@@ -79,8 +77,8 @@ export default {
       this.$refs['loginForm'].validate(valid => {
         if (valid) {
           this.$store.dispatch("login", this.formData)
-            .then(navigateTo('cms'))
-            .catch(errorCb(this, 'Unable to login'))
+            .then(() => this.navigateTo('cms'))
+            .catch((e) => this.showError(e, 'Unable to login'))
         } else {
           this.$alert('Please enter valid credentials', 'Unable to login', {
             confirmButtonText: 'OK',
@@ -89,11 +87,6 @@ export default {
           return false;
         }
       });
-    }
-  },
-  created() {
-    if (this.isLoggedIn) {
-      return router.replace('/cms');
     }
   }
 };

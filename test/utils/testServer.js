@@ -3,12 +3,17 @@ const Pocket   = require("../../src/pocket");
 const _        = require("lodash");
 const http     = require("http");
 
-let app = express();
-let pocket = new Pocket();
+let app = null;
 
-pocket.resource('posts', require('../samples/schemas/posts'));
-app.use(pocket.middleware());
+module.exports = () => {
+  if (!app) {
+    app = express();
+    let pocket = new Pocket();
 
-app.set('pocket', pocket);
+    pocket.resource('posts', require('../samples/schemas/posts'));
+    app.use(pocket.middleware());
 
-module.exports = app;
+    app.set('pocket', pocket);
+  }
+  return app;
+};

@@ -1,0 +1,169 @@
+<template>
+  <el-container class="container" v-loading="loading">
+    <el-aside class="side-panel">
+      <el-menu>
+          <el-menu-item v-for="(record, recordIdx) in records" :index="recordIdx.toString()" :key="record._id || 'newrecord'" v-on:click="selectRecord(record)">
+            <div v-if="!record._id">(new record)</div>
+            <div v-else>{{ record | prettyRecord }}</div>
+          </el-menu-item>
+      </el-menu>
+
+      <el-button class="add-button" icon="el-icon-plus" v-on:click="newRecord"></el-button>
+    </el-aside>
+    <el-main class="edit-form" v-if="editableRecord">
+      <div class="resource-input" v-for="(field, fieldName) in fields" v-bind:key='fieldName'>
+        <div class="label">{{ fieldName | camelToText | capitalize }}</div>
+        <RecordInput v-bind:record='editableRecord' v-bind:field='field' v-bind:fieldName='fieldName' />
+      </div>
+      <div>
+        <el-row>
+          <el-button type="success" v-on:click='saveRecord'>Save</el-button>
+          <el-button type="danger"  v-on:click='deleteRecord'>Delete</el-button>
+        </el-row>
+      </div>
+    </el-main>
+  </el-container>
+</template>
+
+<script>
+  import Vue            from 'Vue'
+  import PocketService  from '../services/PocketService'
+  import RecordInput    from './RecordInput'
+  import { mapGetters } from "vuex"
+  import _              from "lodash"
+  import common         from '../mixins/common'
+
+  export default {
+    props: ['options'],
+    mixins: [common],
+    components: {
+      RecordInput
+    },
+    data() {
+      return {
+        page: 1,
+        records: [],
+        selectedRecord: null,
+        editableRecord: null
+      }
+    },
+    created() {
+      this.loadPage(this.page);
+    },
+    computed: {
+      ...mapGetters([
+        "currentUser",
+        "schemas",
+        "authToken"
+      ]),
+      fields() {
+        return _.find(this.schemas, ['name', this.resource]).fields;
+      },
+      resource() {
+        return this.options.resource;
+      },
+      isNewRecord() {
+        return this.selectedRecord && !this.selectedRecord._id;
+      }
+    },
+    watch: {
+      page(newPage) {
+        this.loadPage(newPage);
+      },
+      options({ resource }) {
+        // On resource change, we go back to the first page
+        this.page = 1;
+        this.selectedRecord = null;
+        this.editableRecord = null;
+        this.loadPage(this.page);
+      }
+    },
+    methods: {
+
+      selectRecord(record) {
+        if (this.selectedRecord === record) {
+          return;
+        }
+        if (this.selectedRecord && this.isNewRecord) {
+          this.deleteRecord();
+        }
+        this.selectedRecord = record;
+        this.editableRecord = _.cloneDeep(record);
+      },
+
+      newRecord() {
+        const newRecord = {};
+        this.records.unshift(newRecord);
+        return this.selectRecord(newRecord);
+      },
+
+      async saveRecord() {
+        if (!this.editableRecord) {
+          return;
+        }
+
+        let savedRecord = await this.runTask(
+          'Saving record',
+          this.isNewRecord ?
+            PocketService.createRecord(this.resource, this.editableRecord) :
+            PocketService.updateRecord(this.resource, this.editableRecord._id, this.editableRecord)
+        );
+
+        const indexOfItem = this.records.indexOf(this.selectedRecord);
+        Vue.set(this.records, indexOfItem, savedRecord)
+
+        this.selectedRecord = savedRecord;
+        this.editableRecord = _.cloneDeep(savedRecord);
+      },
+
+      async deleteRecord() {
+        if (!this.isNewRecord) {
+          await this.runTask(PocketService.deleteRecord(this.resource, this.selectedRecord._id));
+        }
+        _.pull(this.records, this.selectedRecord);
+        this.selectedRecord = null;
+        this.editableRecord = null;
+      },
+
+      async loadPage(page) {
+        if (!this.resource || this.loading) {
+          return;
+        }
+        this.records = await this.runTask(PocketService.fetchRecords(this.resource, page));
+      }
+    }
+  }
+</script>
+
+<style lang="scss" scoped>
+  .side-panel {
+    width: 200px;
+    height: 100%;
+    border-right: 1px solid #eee;
+    position: relative;
+
+    .el-menu {
+      border-right: none;
+    }
+
+    .add-button {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      background: #F2F6FC;
+      z-index: 1000;
+    }
+  }
+
+  .edit-form {
+    .label {
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+
+    .resource-input {
+      margin-bottom: 15px;
+    }
+  }
+</style>
+

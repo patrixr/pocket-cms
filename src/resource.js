@@ -1,7 +1,9 @@
 const env               = require("./utils/env");
 const _                 = require("lodash");
-const { Error }         = require("./utils/errors");
 const modify            = require('modifyjs');
+const {
+    RESOURCE_NOT_FOUND,
+    Error }             = require("./utils/errors");
 
 const reservedProperties = [
     "_id",
@@ -216,22 +218,6 @@ class Resource {
             await this.runHooks({ record: updatedRecord, query, operations }).after('update', 'save');
             return updatedRecord;
         });
-
-        
-        // await this.runHooks({ query, operations }).before('update', 'save');
-
-        // const result    = await this.store.update(this.name, query, operations, opts);
-        // const records   = _.isArray(result) ? result : [result];
-        // await this.runHooks({ query, operations, records }).after('update', 'save');
-
-        // return result;        // resource.js
-        // // await iterate(this.collection, query, opts).forEach(async (record) => {
-        // //     // do studf with record
-        // //     const payload = applyUpdateOps(record, operations);
-        // //     this.runHooks('before', 'save', { payload, oldRecord: record });
-        // //     await this.store.save({ _id: payload._id }, { $set: payload });
-        // //     this.runHooks('before', 'save', { payload });
-        // // });
     }
 
     /**
@@ -243,6 +229,12 @@ class Resource {
      * @memberof Resource
      */
     async updateOne(id, operations) {
+        const exists = await this.get(id);
+
+        if (!exists) {
+            throw RESOURCE_NOT_FOUND;
+        }
+
         await this.update({ _id: id }, operations, { multi: false });
         return this.get(id);
     }

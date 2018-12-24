@@ -75,19 +75,20 @@ module.exports = function (pocket) {
         }
     });
 
-    router.get("/refresh", authenticate, (req, res) => {
-        const user = _.get(req, 'ctx.user');
-        if (!user) {
-            return UNAUTHORIZED.send(res);
-        }
-        return res.json({
-            authenticated: true,
-            token: user.jwt(),
-            user: user.toPlainObject()
-        });
-    })
+    // router.get("/refresh", authenticate, (req, res) => {
+    //     const user = _.get(req, 'ctx.user');
+    //     if (!user) {
+    //         return UNAUTHORIZED.send(res);
+    //     }
+    //     return res.json({
+    //         authenticated: true,
+    //         token: user.jwt(),
+    //         user: user.toPlainObject()
+    //     });
+    // })
 
     router.get("/status", authenticate, (req, res) => {
+        const { user } = req.ctx;
         return res.json({
             authenticated: !!user,
             user: user && user.toPlainObject()

@@ -2,9 +2,9 @@ const _                      = require("lodash");
 const { Validator }          = require("jsonschema");
 const { JsonSchemaBuilder }  = require("./mapper");
 const { asyncEach }          = require('../utils/helpers');
-const { User }               = require('../users');
 
 const ALLOWED_ACTIONS = ['read', 'create', 'update', 'remove'];
+
 const ACTION_ALIASES = {
   'delete': 'remove',
   'insert': 'create',
@@ -12,14 +12,42 @@ const ACTION_ALIASES = {
   'get': 'read'
 };
 
+const ALIASES = {
+  "string": "text",
+  "json": "object",
+  "select": "enum",
+  "list": "array"
+}
+
 const builder = new JsonSchemaBuilder();
 
 class Schema {
-  constructor(fields) {
-    this.fields = fields;
-    this.jsonSchema = builder.build(fields);
+  constructor({ fields, additionalProperties }) {
+    this.fields = this.normalizeSchema(fields);
+    this.jsonSchema = builder.build(this.fields, { additionalProperties });
     this.clearHooks();
     this.permissions = {};
+  }
+
+  normalizeField(field) {
+    let normalized = _.isString(field) ? { type: field } : field;
+    if (ALIASES[normalized.type]) {
+      normalized.type = ALIASES[normalized.type]
+    }
+    if (normalized.schema) {
+      normalized.schema = this.normalizeSchema(normalized.schema);
+    }
+    if (normalized.items) {
+      normalized.items = this.normalizeField(normalized.items);
+    }
+    return normalized;
+  }
+
+  normalizeSchema(fields) {
+    for (let key in fields) {
+      fields[key] = this.normalizeField(fields[key]);
+    }
+    return fields;
   }
 
   indices() {
@@ -34,7 +62,9 @@ class Schema {
       .value();
   }
 
-  // ---- ACCESS RIGHTS
+  //
+  // ---- ACL
+  //
 
   _trimActions(actions) {
     return _.chain(actions)
@@ -77,7 +107,9 @@ class Schema {
     return _.includes(rights, action)
   }
 
+  //
   // ---- VALIDATION
+  //
 
   validate(data, opts = {}) {
     const {
@@ -98,7 +130,9 @@ class Schema {
       .errors.map(e => `${e.property} ${e.message}`);
   }
 
+  //
   // ---- HOOKS
+  //
 
   before(method, fn) {
     if (!this.hooks.before[method]) {

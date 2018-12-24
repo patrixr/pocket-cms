@@ -17,7 +17,7 @@ module.exports = function(pocket) {
     const schemas = _.map(pocket.resources, ({ schema }, name) => {
       return {
         name,
-        schema: schema.fields
+        fields: schema.fields
       };
     });
     res.json(schemas);

@@ -1,7 +1,8 @@
-import Vue from "vue";
-import Vuex from "vuex";
-import _ from 'lodash';
-import PocketService from '../services/PocketService';
+import Vue            from "vue";
+import Vuex           from "vuex";
+import _              from 'lodash';
+import PocketService  from '../services/PocketService';
+import LocalStorage   from '../services/LocalStorage';
 
 Vue.use(Vuex);
 
@@ -21,7 +22,7 @@ export default new Vuex.Store({
   state: {
     schemas: [],
     user: null,
-    authToken: null
+    authToken: LocalStorage.get('authToken')
   },
   getters: {
     schemas: getter('schemas'),
@@ -31,9 +32,7 @@ export default new Vuex.Store({
   actions: {
 
     async loadSchemas(ctx) {
-      const schemas = await PocketService
-        .withAuth(ctx.state.authToken)
-        .fetchSchemas();
+      const schemas = await PocketService.fetchSchemas();
       ctx.commit('setSchemas', schemas || []);
     },
 
@@ -44,19 +43,34 @@ export default new Vuex.Store({
       return user;
     },
 
+    async restoreUser(ctx) {
+      if (ctx.getters.currentUser) {
+        return;
+      }
+      const user = await PocketService.getUser();
+
+      if (user) {
+        ctx.commit('setUser', user);
+      }
+    },
+
     logout(ctx) {
       ctx.commit('clearUser');
+      ctx.commit('setAuthToken', null);
     }
 
   },
   mutations: {
     setSchemas: setter('schemas'),
     setUser: setter('user'),
-    setAuthToken: setter('authToken'),
+
+    setAuthToken(state, token) {
+      state.authToken = token;
+      LocalStorage.set('authToken', token);
+    },
 
     clearUser(state) {
       state.user = null;
-      state.authToken = null;
     }
   }
 });

@@ -1,17 +1,38 @@
 var express = require("express");
-var log4js  = require("log4js");
-var Pocket  = require("../src/pocket");
+var log4js = require("log4js");
+var Pocket = require("../src/pocket");
 
-let logger  = log4js.getLogger();
-let server  = express();
-let port    = 8000;
+let logger = log4js.getLogger();
+let server = express();
+let port = 8000;
 
-logger.level = 'info';
+logger.level = "info";
 
 const pocket = new Pocket();
+
+pocket.resource("posts", {
+  fields: {
+    type: {
+      type: "select",
+      options: ["media", "statistics", "achievement"]
+    },
+    message: "string",
+    stats: {
+      type: "list",
+      minItems: 1,
+      items: {
+        type: "object",
+        schema: {
+          key: "string",
+          value: "number"
+        }
+      }
+    }
+  }
+});
 
 server.use(pocket.middleware());
 
 server.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
+  logger.info(`Server running on port ${port}`);
 });

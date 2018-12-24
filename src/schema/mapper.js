@@ -38,11 +38,7 @@ class JsonSchemaBuilder {
       },
       map: ({ items }) => {
         return MAP_OF(this.convertProp(items));
-      },
-      string: this.alias("text"),
-      json: this.alias("object"),
-      select: this.alias("enum"),
-      list: this.alias('array')
+      }
     };
   }
 
@@ -59,7 +55,7 @@ class JsonSchemaBuilder {
     return this.mapping[typeDesc.type](typeDesc);
   }
 
-  build(pocketSchema) {
+  build(pocketSchema, options = {}) {
     let properties = {};
     let required = [];
     _.each(pocketSchema, (typeDesc, propName) => {
@@ -72,7 +68,7 @@ class JsonSchemaBuilder {
       type: "object",
       properties,
       required,
-      additionalProperties: false
+      additionalProperties: !!options.additionalProperties
     };
   }
 }
