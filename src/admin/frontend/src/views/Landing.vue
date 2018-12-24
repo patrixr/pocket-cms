@@ -64,6 +64,14 @@ export default {
       }
     }
   },
+  mounted() {
+    if (this.$route.error) {
+      this.$message({
+        message: this.$route.error,
+        type: 'error'
+      });
+    }
+  },
   computed: {
     ...mapGetters([
       'currentUser'

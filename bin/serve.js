@@ -10,7 +10,7 @@ logger.level = "info";
 
 const pocket = new Pocket();
 
-pocket.resource("posts", {
+const post = new pocket.Schema({
   fields: {
     type: {
       type: "select",
@@ -29,7 +29,12 @@ pocket.resource("posts", {
       }
     }
   }
+})
+.before('validate', ({ record }) => {
+  record.stats = record.stats || [];
 });
+
+pocket.resource("posts", post);
 
 server.use(pocket.middleware());
 

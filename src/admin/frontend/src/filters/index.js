@@ -23,6 +23,10 @@ Vue.filter("prettyRecord", (record) => {
   return record._id;
 });
 
+Vue.filter("prettyJSON", (data) => {
+  return JSON.stringify(data, null, 4);
+});
+
 Vue.filter("camelToText", (text) => {
   return text.replace(/([A-Z])/g, " $1");
 });

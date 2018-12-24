@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- STRING -->
-    <div v-if="field.type === 'string'">
+    <div v-if="field.type === 'text'">
       <el-input placeholder="Text..." v-model="record[fieldName]"></el-input>
     </div>
 
@@ -20,8 +20,17 @@
       <StringList v-bind:record='record' v-bind:fieldName='fieldName' v-bind:field='field' />
     </div>
 
+    <div v-else-if="field.type === 'select'">
+      <el-select v-model="record[fieldName]" filterable="" no-match-text="No match" default-first-option placeholder="Select">
+        <el-option v-for="opt in field.options" :key="opt" :label="opt" :value="opt" />
+      </el-select>
+    </div>
+
     <div class='unsupported-input' v-else>
-      Unsupported input ({{ field.type }})
+      Complex type - <el-button v-on:click="showRaw = !showRaw" type="text">{{ showRaw ? 'hide raw' : 'view raw' }}</el-button>
+      <pre v-if="showRaw">
+        {{ record[fieldName] | prettyJSON }}
+      </pre>
     </div>
 
   </div>
@@ -40,18 +49,19 @@
     data() {
       return {
         newStringItem: '',
+        showRaw: false,
       }
     },
     methods: {
       isStringList() {
         const field = this.field;
-        if (field.type !== 'list' && field.type !== 'array') {
+        if (field.type !== 'array') {
           return false;
         }
         if (!field.items) {
           return false;
         }
-        return !!_.find(['string', 'text'], (type) => {
+        return !!_.find(['text'], (type) => {
           return field.items === type || field.items.type === type;
         });
       }
@@ -62,9 +72,13 @@
 
 <style lang="scss" scoped>
   .unsupported-input {
-
     color: gray;
     font-size: 0.8rem;
     text-indent: 1em;
+  }
+
+  pre {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
   }
 </style>

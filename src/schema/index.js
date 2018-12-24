@@ -15,7 +15,7 @@ const ACTION_ALIASES = {
 const ALIASES = {
   "string": "text",
   "json": "object",
-  "select": "enum",
+  "enum": "select",
   "list": "array"
 }
 

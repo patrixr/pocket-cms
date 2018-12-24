@@ -24,7 +24,7 @@ class JsonSchemaBuilder {
         }
         return OBJECT();
       },
-      enum: ({ options }) => {
+      select: ({ options }) => {
         return ENUM(options);
       },
       email: () => {

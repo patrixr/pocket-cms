@@ -38,6 +38,11 @@ export default new Vuex.Store({
 
     async login(ctx, { username, password }) {
       const { user, token } = await PocketService.login(username, password);
+
+      if (!_.includes(user.groups, 'admins')) {
+        throw { message: 'Access Forbidden' };
+      }
+
       ctx.commit('setUser', user);
       ctx.commit('setAuthToken', token);
       return user;
