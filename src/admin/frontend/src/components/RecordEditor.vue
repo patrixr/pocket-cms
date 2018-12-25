@@ -31,7 +31,7 @@
 </template>
 
 <script>
-  import Vue            from 'Vue'
+  import Vue            from 'vue'
   import PocketService  from '../services/PocketService'
   import RecordInput    from './RecordInput'
   import { mapGetters } from "vuex"
