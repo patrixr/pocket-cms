@@ -24,10 +24,6 @@ describe("Users", () => {
         userManager.resource.drop().then(() => done());
     })
 
-    afterEach(() => {
-        userManager.ENFORCE_VALID_GROUP = false;
-    })
-
     it("Should create an admin user", async () => {
         let user = await userManager.create("patrick", "123456", userManager.Groups.ADMINS)
         expect(user).not.to.be.null;
@@ -42,12 +38,6 @@ describe("Users", () => {
         )
         .to.eventually.be.rejected
         .notify(done);
-    })
-
-    it("Should fail to create a user of an unknown group", (done) => {
-        userManager.ENFORCE_VALID_GROUP = true;
-        expect(userManager.create("bob", "123456", "invalid_group"))
-            .to.eventually.be.rejected.notify(done);
     })
 
     it("Should not load a user with a wrong password", (done) => {
@@ -81,5 +71,34 @@ describe("Users", () => {
             .to.be.rejected
             .notify(done);
     })
+
+    it("Should have created the default _groups upon startup", async () => {
+        const allGroups = _.map(await pocket.resource('_groups').find({}), 'name');
+        _.each(['admins', 'users'], baseGroup => {
+            expect(_.includes(allGroups, baseGroup)).to.be.true;
+        });
+    });
+
+    _.each([ 'admins', 'users' ], (name) => {
+        it(`Should not be possible to delete the default ${name} group`, async () => {
+            let rejected = false;
+            try {
+                await pocket.resource('_groups').remove({ name });
+            } catch (e) {
+                rejected = true;
+            }
+            expect(rejected).to.be.true;
+        });
+    });
+
+    it("Should prevent saving a user with a non-existing group name", async () => {
+        let rejected = false;
+        try {
+            await userManager.create("bruce_wayne", "123456", 'invalid_group_name');
+        } catch (e) {
+            rejected = true;
+        }
+        expect(rejected).to.be.true;
+    });
 
 })

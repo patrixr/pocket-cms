@@ -5,6 +5,7 @@ const jwt                  = require("jsonwebtoken")
 const config               = require("./utils/config")
 const Schema               = require('./schema')
 const {
+    FORBIDDEN,
     INVALID_USER_GROUP,
     INVALID_USERNAME_PW,
     SESSION_EXPIRED,
@@ -12,7 +13,16 @@ const {
     UNAUTHORIZED,
     INTERNAL_ERROR }   = require("./utils/errors")
 
+const DEFAULT_PERMISSIONS = {
+    ALL_ACCESS: { "*" : [ 'read', 'create', 'update', 'remove' ] },
+    READ_ONLY: { "*" : [ 'read' ] },
+    NO_PERMISSIONS: {}
+};
 
+/**
+ * User wrapper class
+ *
+ */
 class User {
 
     constructor(userManager, config) {
@@ -28,7 +38,7 @@ class User {
 
     toPlainObject() {
         return {
-            id:             this.id,
+            _id:            this.id,
             username:       this.username,
             groups:         this.groups,
             permissions:    this.permissions
@@ -80,7 +90,7 @@ class UserManager {
     constructor(pocket) {
         this.pocket     = pocket;
         this.config     = pocket.config();
-        this.schema     = new Schema({
+        this.resource   = pocket.resource("_users", new Schema({
             fields: {
                 username: {
                     type: "string",
@@ -121,14 +131,23 @@ class UserManager {
             }
         })
         .before('save', async ({ record }) => {
+            const db        = pocket.resource('_groups');
+            const allGroups = _.map(await db.findAll(), 'name');
+            const groups    = record.groups || [];
+
+            for (var g of groups) {
+                if (!_.includes(allGroups, g)) {
+                    throw INVALID_USER_GROUP;
+                }
+            }
+
             if (record.password) {
                 record.hash = await crypto.hash(record.password);
                 delete record.password;
             }
-        });
+        }));
 
-        this.resource   = pocket.resource("_users", this.schema);
-        this.ENFORCE_VALID_GROUP = false;
+        this.initializePromise = this.initializeGroups();
     }
 
     get Groups() {
@@ -142,6 +161,58 @@ class UserManager {
         return [
             this.Groups.ADMINS
         ]
+    }
+
+    ready() {
+        return this.initializePromise;
+    }
+
+    async initializeGroups() {
+        const baseGroups = [
+            {
+                name: 'admins',
+                permissions: {}
+            },
+            {
+                name: 'users',
+                permissions: DEFAULT_PERMISSIONS.READ_ONLY
+            }
+        ];
+
+        const schema = new Schema({
+            fields: {
+                name: {
+                    type: "string",
+                    index: {
+                        unique: true
+                    }
+                },
+                permissions: {
+                    type: "map",
+                    items: {
+                        type: "array",
+                        items: {
+                            type : "string"
+                        }
+                    }
+                }
+            },
+        })
+        .before('remove', ({ record }) => {
+            const notToDelete = _.map(baseGroups, 'name');
+            if (_.includes(notToDelete, record.name)) {
+                throw FORBIDDEN;
+            }
+        });
+
+        this.groupDB = this.pocket.resource("_groups",  schema);
+        for (var group of baseGroups) {
+            const results = await this.groupDB.find({ name: group.name });
+            if (results.length === 0) {
+                await this.groupDB.create(group);
+                console.log(`Group ${group.name} created.`);
+            }
+        }
     }
 
     // ---- METHODS
@@ -182,16 +253,10 @@ class UserManager {
      * @returns {User} a new user
      */
     async create(username, password, groups = [ "users" ], permissions = {}) {
+        await this.ready();
+
         if (_.isString(groups)) {
             groups = [ groups ];
-        }
-
-        if (this.ENFORCE_VALID_GROUP) {
-            for (let group of groups) {
-                if (!_.find(_.values(this.Groups), (g) => g === group)) {
-                    throw INVALID_USER_GROUP;
-                }
-            }
         }
 
         const existing = await this.resource.findOne({ username : username });
@@ -275,7 +340,7 @@ class UserManager {
                 return deferred.reject(UNAUTHORIZED);
             }
 
-            let uid = decoded.id;
+            let uid = decoded._id;
             if (!uid) {
                 return deferred.reject(UNAUTHORIZED);
             }

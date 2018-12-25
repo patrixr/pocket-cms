@@ -12,7 +12,12 @@
     </el-aside>
     <el-main class="edit-form" v-if="editableRecord">
       <div class="resource-input" v-for="(field, fieldName) in fields" v-bind:key='fieldName'>
-        <div class="label">{{ fieldName | camelToText | capitalize }}</div>
+        <div class="label">
+          {{ fieldName | camelToText | capitalize }}
+          <span class="index-label" v-if="field.index">
+            index[unique={{ field.index.unique ? 'true' : 'false' }}]
+          </span>
+        </div>
         <RecordInput v-bind:record='editableRecord' v-bind:field='field' v-bind:fieldName='fieldName' />
       </div>
       <div>
@@ -159,6 +164,11 @@
     .label {
       opacity: 0.7;
       margin-bottom: 5px;
+
+      .index-label {
+        font-size: 0.8em;
+        color: gray;
+      }
     }
 
     .resource-input {

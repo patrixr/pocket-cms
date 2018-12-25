@@ -16,16 +16,22 @@ describe("Rest", () => {
 
     // ---- Setup
 
-    before((done) => {
+    before(() => {
         TestServer    = server();
         pocket        = TestServer.get('pocket');
         userManager   = pocket.users;
         config        = pocket.config();
-        done();
+
+        return pocket.ready();
     });
 
     afterEach(async () => {
-        return asyncEach(_.values(pocket.resources), async (r) => r.drop());
+        for (let name in pocket.resources) {
+            const resource = pocket.resources[name];
+            if (!_.startsWith(name, '_')) {
+                await resource.drop();
+            }
+        }
     });
 
     after((done) => {
@@ -297,7 +303,7 @@ describe("Rest", () => {
             expect(token.length).to.be.greaterThan(0);
             expect(user).to.be.an('object');
             expect(user.username).to.equal("admin");
-            expect(user.id.length).to.be.greaterThan(0);
+            expect(user._id.length).to.be.greaterThan(0);
         });
 
         // it("Should allow users to refresh their jwt token", async () => {
@@ -355,7 +361,7 @@ describe("Rest", () => {
             expect(token.length).to.be.greaterThan(0);
             expect(user).to.be.an('object');
             expect(user.username).to.equal("user1");
-            expect(user.id.length).to.be.greaterThan(0);
+            expect(user._id.length).to.be.greaterThan(0);
         });
 
         it("Should prevent registering a user with an existing username", async () => {
@@ -374,23 +380,22 @@ describe("Rest", () => {
 
     describe("Global Webservice security /rest/:resource", () => {
 
-        beforeEach((done) => {
+        before(async () => {
+            await pocket.resource('_groups').create({ name: 'specialGroup' });
+        });
+
+        beforeEach(async () => {
             config.testing.disableAuthentication = false;
-            Q.all([
-                userManager.create("adminUser", "password", [ "admins" ]),
-                userManager.create("noPermissionUser", "password", [ "users" ]),
-                userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
-                userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] }),
-                userManager.create("specialGroupUser", "password", [ "specialGroup" ])
-            ])
-            .then(() => done());
+            await userManager.create("adminUser", "password", [ "admins" ]),
+            await userManager.create("noPermissionUser", "password", [ "users" ]),
+            await userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
+            await userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] }),
+            await userManager.create("specialGroupUser", "password", [ "specialGroup" ])
         })
 
-        afterEach((done) => {
-            userManager.resource.drop().then(() => {
-                config.testing.disableAuthentication = true;
-                done();
-            });
+        afterEach(async () => {
+            await userManager.resource.drop();
+            config.testing.disableAuthentication = true;
         })
 
         async function logIn(username, password) {
@@ -522,20 +527,15 @@ describe("Rest", () => {
 
         let uid = null;
 
-        beforeEach((done) => {
+        beforeEach(async () => {
             config.testing.disableAuthentication = false;
-            userManager.create("testuser", "password", [ "admins" ])
-                .then((user) => {
-                    uid = user.id;
-                    done()
-                });
+            const user = await userManager.create("testuser", "password", [ "admins" ])
+            uid = user.id;
         })
 
-        afterEach((done) => {
-            userManager.resource.drop().then(() => {
-                config.testing.disableAuthentication = true;
-                done();
-            });
+        afterEach(async () => {
+            await userManager.resource.drop();
+            config.testing.disableAuthentication = true;
         })
 
         async function logIn(username, password) {

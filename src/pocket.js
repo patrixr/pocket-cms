@@ -32,13 +32,15 @@ class Pocket {
         // --- Setup database
         this.jsonStore = stores.createJsonStore(this);
         this.fileStore = stores.createFileStore(this);
-        this.initialization = Q.all([
-            this.jsonStore.ready(),
-            this.fileStore.ready()
-        ]);
 
         // --- Setup user manager
         this.users = new UserManager(this);
+
+        this.initialization = Q.all([
+            this.jsonStore.ready(),
+            this.fileStore.ready(),
+            this.users.ready()
+        ]);
 
         const onShutdown = async () => {
             console.log('\nShutting down Pocket');

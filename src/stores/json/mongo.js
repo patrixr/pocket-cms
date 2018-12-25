@@ -164,7 +164,7 @@ class MongoAdapter extends BaseAdapter {
     /**
      * Resolves once the adapter has been initialized
      */
-    async ready () {
+    ready () {
         return this.initialization;
     }
 }

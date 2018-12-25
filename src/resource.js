@@ -113,10 +113,14 @@ class Resource {
      * @memberof Resource
      */
     async findOne(query = {}, options = {}) {
-        await this.pocket.ready();
+        await this.store.ready();
 
         let records = await this.find(query, _.extend({}, options, { pageSize: 1 }));
         return records[0] || null;
+    }
+
+    findAll(opts = {}) {
+        return this.find({}, opts);
     }
 
     /**
@@ -128,7 +132,7 @@ class Resource {
      * @memberof Resource
      */
     async find(query = {}, opts = {}) {
-        await this.pocket.ready();
+        await this.store.ready();
 
         await this.runHooks({ query, options : opts }).before('find', 'read');
 
@@ -157,7 +161,7 @@ class Resource {
      * @memberof Resource
      */
     async create(payload, opts = {}) {
-        await this.pocket.ready();
+        await this.store.ready();
 
         let userId  = opts.userId || (this.context.user && this.context.user.id);
         let data    = await this.validate(payload);
@@ -205,7 +209,7 @@ class Resource {
      * @memberof Resource
      */
     async update(query, operations, options = {}) {
-        await this.pocket.ready();
+        await this.store.ready();
 
         const opts = _.extend({ multi: true }, options);
 
@@ -258,7 +262,7 @@ class Resource {
      * @memberof Resource
      */
     async remove(query, options = { multi: true }) {
-        await this.pocket.ready();
+        await this.store.ready();
 
         const multi = !!options.multi;
 
@@ -282,7 +286,7 @@ class Resource {
             throw "Dropping a database is only allowed in test mode"
         }
 
-        await this.pocket.ready();
+        await this.store.ready();
 
         return await this.store.remove(this.name, { }, { multi: true });
     }
@@ -296,7 +300,8 @@ class Resource {
      * @memberof Resource
      */
     async attach(recordId, name, file) {
-        await this.pocket.ready();
+        await this.store.ready();
+        await this.attachments.ready();
 
         let result = await this.attachments.save(name, file);
 
@@ -315,7 +320,8 @@ class Resource {
      * @param {String} attachmentId
      */
     async deleteAttachment(recordId, attachmentId) {
-        await this.pocket.ready();
+        await this.store.ready();
+        await this.attachments.ready();
 
         let record      = await this.get(recordId);
 

@@ -18,7 +18,7 @@ describe("Schemas", () => {
 
     _.each([
       "text",
-      "enum",
+      "select",
       "object",
       "number",
       "email"
@@ -44,7 +44,7 @@ describe("Schemas", () => {
           maxLength: 8
         },
         gender: {
-          type: "enum",
+          type: "select",
           options: ["alien", "dancer"]
         },
         email: {
