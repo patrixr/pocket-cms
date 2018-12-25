@@ -37,7 +37,7 @@
     "test:watch": "mocha --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
     "document": "esdoc",
-    "build": "parcel build src/admin/frontend/index.html --out-dir dist/admin --public-url /admin",
+    "build": "parcel build src/admin/frontend/index.html --out-dir dist/admin",
     "dev": "PARCEL_DEV=true parcel src/admin/frontend/index.html --out-dir dist/admin",
     "prepublish": "npm run build"
   },

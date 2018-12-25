@@ -36,7 +36,7 @@ const post = new pocket.Schema({
 
 pocket.resource("posts", post);
 
-server.use(pocket.middleware());
+server.use('/', pocket.middleware());
 
 server.listen(port, () => {
   logger.info(`Server running on port ${port}`);
