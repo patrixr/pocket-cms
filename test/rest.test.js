@@ -114,6 +114,9 @@ describe("Rest", () => {
             let page1 = res1.body;
             expect(page1).to.be.an('array');
             expect(page1).to.have.length(6);
+            expect(res1.headers['x-total-pages']).to.equal('2');
+            expect(res1.headers['x-per-page']).to.equal('6');
+            expect(res1.headers['x-page']).to.equal('1');
 
             let res2 = await request(TestServer)
                 .get('/rest/posts')
@@ -124,6 +127,9 @@ describe("Rest", () => {
             let page2 = res2.body;
             expect(page2).to.be.an('array');
             expect(page2).to.have.length(4);
+            expect(res2.headers['x-total-pages']).to.equal('2');
+            expect(res2.headers['x-per-page']).to.equal('6');
+            expect(res2.headers['x-page']).to.equal('2');
         })
 
         it("Should retrieve the full list of items", async () => {

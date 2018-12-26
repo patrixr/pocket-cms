@@ -210,7 +210,6 @@ class UserManager {
             const results = await this.groupDB.find({ name: group.name });
             if (results.length === 0) {
                 await this.groupDB.create(group);
-                console.log(`Group ${group.name} created.`);
             }
         }
     }

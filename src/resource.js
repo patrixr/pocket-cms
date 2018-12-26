@@ -137,15 +137,26 @@ class Resource {
         await this.runHooks({ query, options : opts }).before('find', 'read');
 
         let params = {};
-        if (_.isNumber(opts.pageSize)) {
-            if (_.isNumber(opts.page)) {
-                let page = opts.page > 0 ? opts.page - 1 : 0; // Pages are 1 indexed
-                params.skip = page * opts.pageSize;
-            }
-            params.limit = opts.pageSize;
+        let paginated = false;
+        let page = _.isNumber(opts.page) ? opts.page : 1;
+        let pageSize = opts.pageSize;
+        if (_.isNumber(pageSize)) {
+            paginated = true;
+            let idx = page > 0 ? page - 1 : 0; // Pages are 1 indexed
+            params.skip = idx * pageSize;
+            params.limit = pageSize;
         }
 
-        let records = await this.store.find(this.name, query, params)
+        let records = await this.store.find(this.name, query, params);
+
+        if (paginated) {
+            const count = await this.store.count(this.name, query);
+            records.meta = {
+                page,
+                pageSize,
+                totalPages: Math.ceil(count / pageSize)
+            };
+        }
 
         await this.runHooks({ records, query, options : opts }).after('find', 'read');
 

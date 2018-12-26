@@ -90,7 +90,7 @@ class DiskAdapter extends BaseAdapter {
      * @param {string} collection
      * @param {object} payload
      */
-    async insert (collection, payload) {
+    insert (collection, payload) {
         let db      = this._getDB(collection);
         let insert  = promisify(db.insert, db);
 
@@ -106,7 +106,7 @@ class DiskAdapter extends BaseAdapter {
      * @param {object} opts
      * @param {boolean} opts.multi
      */
-    async update (collection, query, operations, opts = {}) {
+    update (collection, query, operations, opts = {}) {
         let db          = this._getDB(collection);
         let deferred    = Q.defer();
 
@@ -131,11 +131,25 @@ class DiskAdapter extends BaseAdapter {
      * @param {object} options
      * @param {object} options.multi
      */
-    async remove (collection, query, options = { multi: true }) {
+    remove (collection, query, options = { multi: true }) {
         let db      = this._getDB(collection);
         let remove  = promisify(db.remove, db);
 
-        return await remove(query, options);
+        return remove(query, options);
+    }
+
+    /**
+     * Returns the number or records
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @memberof BaseAdapter
+     */
+    count(collection, query = {}) {
+        let db      = this._getDB(collection);
+        let count   = promisify(db.count, db);
+
+        return count(query);
     }
 
     /**

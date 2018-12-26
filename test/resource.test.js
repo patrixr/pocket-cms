@@ -233,10 +233,17 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
             let page1 = await resource.find({}, { pageSize: 6, page: 1 });
             expect(page1).to.be.an('array');
             expect(page1.length).to.equal(6);
+            expect(page1.meta).to.be.an('object');
+            expect(page1.meta.page).to.equal(1);
+            expect(page1.meta.pageSize).to.equal(6);
+            expect(page1.meta.totalPages).to.equal(2);
 
             let page2 = await resource.find({}, { pageSize: 6, page: 2 });
             expect(page2).to.be.an('array');
             expect(page2.length).to.equal(4);
+            expect(page2.meta.page).to.equal(2);
+            expect(page2.meta.pageSize).to.equal(6);
+            expect(page2.meta.totalPages).to.equal(2);
         })
 
         describe("Hooks", () => {

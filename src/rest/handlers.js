@@ -94,6 +94,13 @@ const getAll = Handler(async (req, res) => {
     }
 
     const records = await req.resource.find(query, paginationOptions);
+
+    const meta = records.meta;
+    if (meta) {
+        res.set('X-Total-Pages', meta.totalPages);
+        res.set('X-Per-Page', meta.pageSize);
+        res.set('X-Page', meta.page);
+    }
     res.json(records);
 })
 

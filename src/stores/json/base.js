@@ -78,6 +78,17 @@ class BaseAdapter {
     }
 
     /**
+     * Returns the number or records
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @memberof BaseAdapter
+     */
+    async count(collection, query = {}) {
+        throw 'Not Implemented'
+    }
+
+    /**
      * Closes the connection
      */
     async close() {

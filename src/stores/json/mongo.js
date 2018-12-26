@@ -155,6 +155,20 @@ class MongoAdapter extends BaseAdapter {
     }
 
     /**
+     * Returns the number or records
+     *
+     * @param {string} collection
+     * @param {object} query
+     * @memberof BaseAdapter
+     */
+    count(collection, query = {}) {
+        let store   = this.db.collection(collection);
+        let count   = promisify(store.countDocuments, store);
+
+        return count(query);
+    }
+
+    /**
      * Closes the connection
      */
     async close() {
