@@ -14,6 +14,7 @@
       class="upload-list"
       :file-list="fileList"
       :on-remove="onRemove"
+      :on-preview="downloadAttachment"
       action=""
       list-type="picture">
     </el-upload>
@@ -80,11 +81,13 @@
             type: 'error'
           });
         }
-
         this.uploadDialogVisible = true;
       },
       hideUploadDialog() {
         this.uploadDialogVisible = false;
+      },
+      downloadAttachment({ attachment }) {
+        window.open(this.attachmentUrl(attachment),'_blank');
       },
       async onRemove({ attachment }){
         await this.runTask(

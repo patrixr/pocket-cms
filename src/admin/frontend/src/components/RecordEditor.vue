@@ -30,7 +30,14 @@
           <div>
             <el-row>
               <el-button type="success" @click='saveRecord'>Save</el-button>
-              <el-button type="danger"  @click='deleteRecord'>Delete</el-button>
+              <el-popover placement="top" width="160" v-model="showDeleteConfirmation">
+                <p>Are you sure ?</p>
+                <div style="text-align: right; margin: 0">
+                  <el-button size="mini" type="text" @click="showDeleteConfirmation = false">No</el-button>
+                  <el-button type="danger" size="mini" @click="deleteRecord">YES!</el-button>
+                </div>
+                <el-button type="danger" slot="reference">Delete</el-button>
+              </el-popover>
             </el-row>
           </div>
         </el-tab-pane>
@@ -67,7 +74,8 @@
         page: 1,
         records: [],
         selectedRecord: null,
-        editableRecord: null
+        editableRecord: null,
+        showDeleteConfirmation: false
       }
     },
     created() {
@@ -140,6 +148,7 @@
       },
 
       async deleteRecord() {
+        this.showDeleteConfirmation = false
         if (!this.isNewRecord) {
           await this.runTask(
             'Deleting record',
