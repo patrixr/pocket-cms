@@ -118,6 +118,8 @@ class Pocket {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+            res.header("Access-Control-Expose-Headers", "Content-Length, X-Page, X-Per-Page, X-Total-Pages");
+            res.header('Cache-Control', 'no-cache');
             next();
         });
 

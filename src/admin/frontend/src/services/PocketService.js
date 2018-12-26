@@ -46,11 +46,31 @@ class PocketService extends JsonService {
     return this.GET(`/rest/${resource}/${id}`, {}, this.headers);
   }
 
-  async fetchRecords(resource, page = 1, pageSize = 25) {
+  async fetchPage(resource, page = 1, pageSize = 25) {
     if (page < 1) {
       page = 1;
     }
-    return this.GET(`/rest/${resource}`, { page, pageSize }, this.headers);
+    if (pageSize <= 0) {
+      pageSize = 25;
+    }
+    try {
+      const { data, headers } = await this.request({
+        path: `/rest/${resource}`,
+        params: { page, pageSize },
+        headers: this.headers,
+        method: 'GET',
+      });
+      return {
+        meta: {
+          totalPages: Number(headers['x-total-pages']),
+          page: Number(headers['x-page']),
+          pageSize: Number(headers['x-per-page'])
+        },
+        records: data
+      };
+    } catch (e) {
+      throw _.get(e, 'response.data');
+    }
   }
 
   async createRecord(resource, record) {

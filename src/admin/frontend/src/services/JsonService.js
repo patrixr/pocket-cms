@@ -8,7 +8,7 @@ export class JsonService {
     this.baseUrl = baseUrl;
   }
 
-  async _request({ path, method = 'GET', params = {}, data = {}, headers = {} }) {
+  request({ path, method = 'GET', params = {}, data = {}, headers = {} }) {
     const url = resolve(this.baseUrl, path);
     return axios({
       url,
@@ -18,14 +18,18 @@ export class JsonService {
       data,
       headers
     })
-    .then(_.property('data'))
-    .catch(e => {
-      throw _.get(e, 'response.data');
-    });
+  }
+
+  dataRequest({ path, method = 'GET', params = {}, data = {}, headers = {} }) {
+    return this.request(...arguments)
+      .then(_.property('data'))
+      .catch(e => {
+        throw _.get(e, 'response.data');
+      });
   }
 
   async GET(path, params = {}, headers = {}) {
-    return this._request({
+    return this.dataRequest({
       path,
       params,
       headers,
@@ -34,7 +38,7 @@ export class JsonService {
   }
 
   async POST(path, body = {}, headers = {}) {
-    return this._request({
+    return this.dataRequest({
       path,
       headers,
       data: body,
@@ -43,7 +47,7 @@ export class JsonService {
   }
 
   async PUT(path, body = {}, headers = {}) {
-    return this._request({
+    return this.dataRequest({
       path,
       headers,
       data: body,
@@ -52,7 +56,7 @@ export class JsonService {
   }
 
   async DELETE(path, params = {}, headers = {}) {
-    return this._request({
+    return this.dataRequest({
       path,
       params,
       headers,

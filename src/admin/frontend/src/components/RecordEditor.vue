@@ -9,7 +9,15 @@
             <div v-else>{{ record | prettyRecord }}</div>
           </el-menu-item>
       </el-menu>
-      <el-button class="add-button" icon="el-icon-plus" @click="newRecord"></el-button>
+      <div class="options-footer">
+        <el-pagination
+          v-if="totalPages > 0"
+          layout="prev, pager, next"
+          :current-page.sync="page"
+          :page-count="totalPages">
+        </el-pagination>
+        <el-button class="add-button" icon="el-icon-plus" @click="newRecord"></el-button>
+      </div>
     </el-aside>
 
     <!-- Resource edition form on the right -->
@@ -75,7 +83,9 @@
         records: [],
         selectedRecord: null,
         editableRecord: null,
-        showDeleteConfirmation: false
+        showDeleteConfirmation: false,
+        pageSize: 25,
+        totalPages: 0
       }
     },
     created() {
@@ -164,29 +174,45 @@
         if (!this.resource || this.loading) {
           return;
         }
-        this.records = await this.runTask(PocketService.fetchRecords(this.resource, page));
+        const { records, meta } = await this.runTask(PocketService.fetchPage(this.resource, page, this.pageSize));
+        this.records = records;
+        this.totalPages = meta.totalPages;
       }
     }
   }
 </script>
 
 <style lang="scss" scoped>
+
+  $pagination-footer-height: 72px;
+
   .side-panel {
     width: 200px;
     height: 100%;
     border-right: 1px solid #eee;
     position: relative;
 
+    >ul {
+      height: calc(100% - #{$pagination-footer-height});
+      overflow-y: auto;
+    }
+
     .el-menu {
       border-right: none;
     }
 
-    .add-button {
+    .options-footer {
       width: 100%;
+      height: $pagination-footer-height;
       position: absolute;
+      position: sticky;
       bottom: 0;
       background: #F2F6FC;
       z-index: 1000;
+
+      .add-button {
+        width: 100%;
+      }
     }
   }
 
