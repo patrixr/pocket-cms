@@ -1,32 +1,48 @@
 <template>
   <el-container class="container" v-loading="loading">
+
+    <!-- Resource selector on the left -->
     <el-aside class="side-panel">
       <el-menu>
-          <el-menu-item v-for="(record, recordIdx) in records" :index="recordIdx.toString()" :key="record._id || 'newrecord'" v-on:click="selectRecord(record)">
+          <el-menu-item v-for="(record, recordIdx) in records" :index="recordIdx.toString()" :key="record._id || 'newrecord'" @click="selectRecord(record)">
             <div v-if="!record._id">(new record)</div>
             <div v-else>{{ record | prettyRecord }}</div>
           </el-menu-item>
       </el-menu>
-
-      <el-button class="add-button" icon="el-icon-plus" v-on:click="newRecord"></el-button>
+      <el-button class="add-button" icon="el-icon-plus" @click="newRecord"></el-button>
     </el-aside>
+
+    <!-- Resource edition form on the right -->
     <el-main class="edit-form" v-if="editableRecord">
-      <div class="resource-input" v-for="(field, fieldName) in fields" v-bind:key='fieldName'>
-        <div class="label">
-          {{ fieldName | camelToText | capitalize }}
-          <span class="index-label" v-if="field.index">
-            index[unique={{ field.index.unique ? 'true' : 'false' }}]
-          </span>
-        </div>
-        <RecordInput v-bind:record='editableRecord' v-bind:field='field' v-bind:fieldName='fieldName' />
-      </div>
-      <div>
-        <el-row>
-          <el-button type="success" v-on:click='saveRecord'>Save</el-button>
-          <el-button type="danger"  v-on:click='deleteRecord'>Delete</el-button>
-        </el-row>
-      </div>
+      <el-tabs>
+        <!-- JSON Editor -->
+        <el-tab-pane>
+          <span slot="label"><i class="el-icon-document"></i> JSON </span>
+          <div class="resource-input" v-for="(field, fieldName) in fields" :key='fieldName'>
+            <div class="label">
+              {{ fieldName | camelToText | capitalize }}
+              <span class="index-label" v-if="field.index">
+                index[unique={{ field.index.unique ? 'true' : 'false' }}]
+              </span>
+            </div>
+            <record-input :record='editableRecord' :field='field' :fieldName='fieldName' />
+          </div>
+          <div>
+            <el-row>
+              <el-button type="success" @click='saveRecord'>Save</el-button>
+              <el-button type="danger"  @click='deleteRecord'>Delete</el-button>
+            </el-row>
+          </div>
+        </el-tab-pane>
+
+        <!-- File Editor -->
+        <el-tab-pane v-if='!isNewRecord'>
+          <span slot="label"><i class="el-icon-picture"></i> Files </span>
+          <file-list :record='selectedRecord' :resource='resource' />
+        </el-tab-pane>
+      </el-tabs>
     </el-main>
+
   </el-container>
 </template>
 
@@ -34,6 +50,7 @@
   import Vue            from 'vue'
   import PocketService  from '../services/PocketService'
   import RecordInput    from './RecordInput'
+  import FileList       from './FileList'
   import { mapGetters } from "vuex"
   import _              from "lodash"
   import common         from '../mixins/common'
@@ -42,7 +59,8 @@
     props: ['options'],
     mixins: [common],
     components: {
-      RecordInput
+      RecordInput,
+      FileList
     },
     data() {
       return {
@@ -123,7 +141,10 @@
 
       async deleteRecord() {
         if (!this.isNewRecord) {
-          await this.runTask(PocketService.deleteRecord(this.resource, this.selectedRecord._id));
+          await this.runTask(
+            'Deleting record',
+            PocketService.deleteRecord(this.resource, this.selectedRecord._id)
+          );
         }
         _.pull(this.records, this.selectedRecord);
         this.selectedRecord = null;

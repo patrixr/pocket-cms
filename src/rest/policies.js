@@ -68,6 +68,10 @@ policies.rule("We can access resources while testing", (req, allow, deny) => {
   }
 });
 
+// policies.rule("Reading an attachment is made public", (req, allow) => {
+//   console.log(req.baseUrl);
+// });
+
 policies.rule("A user is required to access cms resources", (req, allow, deny) => {
   if (!req.ctx.user) {
     throw UNAUTHORIZED;

@@ -1,77 +1,43 @@
-const { Router }       = require("express");
-const handlers         = require("./handlers");
-const bodyParser       = require("body-parser");
-const policies         = require('./policies');
-const env              = require("../utils/env");
-const config           = require("../utils/config");
-const { 
-    FORBIDDEN, 
-    UNAUTHORIZED}       = require("../utils/errors");
+const { Router }  = require("express");
+const handlers    = require("./handlers");
+const bodyParser  = require("body-parser");
+const policies    = require("./policies");
 
 const ACTION_MAP = {
-    POST: 'create',
-    GET: 'read',
-    DELETE: 'remove',
-    PUT: 'update'
+  POST: "create",
+  GET: "read",
+  DELETE: "remove",
+  PUT: "update"
 };
 
-module.exports = function (pocket) {
-    let router = Router();
-    
-    const prefix = (endpoint) => `(/users/:userId)?${endpoint}`
+module.exports = function(pocket) {
+  let router = Router();
 
-    router.use(bodyParser.json());
-    router.use((req, res, next) => {
-        // Attach pocket to request
-        req.ctx = req.ctx || {};
-        req.ctx.pocket = pocket;
-        next();
-    });
-    router.use('(/users/:userId)?/:resource', policies.middleware());
-    // router.use('(/users/:userId)?/:resource', (req, res, next) => {
-    //     const { resource } = req.params;
+  const prefix = endpoint => `(/users/:userId)?${endpoint}`;
 
-    //     req.pocket = pocket;
+  router.use(bodyParser.json());
+  router.use((req, res, next) => {
+    // Attach pocket to request
+    req.ctx = req.ctx || {};
+    req.ctx.pocket = pocket;
+    next();
+  });
 
-    //     if (env() === "test" && config.testing.disableAuthentication) {
-    //         return next();
-    //     }
+  // Prepare
+  router.use(prefix("/:resource"), handlers.preloadResource);
 
-    //     if (!req.user) {
-    //         return UNAUTHORIZED.send(res);
-    //     }
+  // Public
+  router.get(prefix("/:resource/:id/attachments/:attachmentId"), handlers.downloadAttachment);
 
-    //     if (req.user.isAdmin(req.user)) {
-    //         return next();
-    //     }
+  // Private
+  router.use("(/users/:userId)?/:resource", policies.middleware());
+  router.delete(prefix("/:resource/:id/attachments/:attachmentId"), handlers.deleteAttachment);
+  router.get(prefix("/:resource/:id"), handlers.getOne);
+  router.post(prefix("/:resource/:id/attachments"), handlers.attachFile);
+  router.put(prefix("/:resource/:id"), handlers.updateOne);
+  router.delete(prefix("/:resource/:id"), handlers.removeOne);
+  router.get(prefix("/:resource"), handlers.getAll);
+  router.post(prefix("/:resource"), handlers.createOne);
 
-    //     if (/^_/.test(resource)) {
-    //         // Private cms resource
-    //         return FORBIDDEN.send(res);
-    //     }
-
-    //     const action = ACTION_MAP[req.method.toUpperCase()];
-    //     const schema = pocket.schemaOf(resource);
-
-    //     if (schema && schema.userIsAllowed(req.user, action)) {
-    //         return next();
-    //     }
-
-    //     if (req.user.isAllowed(action, resource)) {
-    //         return next();
-    //     }
-
-    //     return FORBIDDEN.send(res);
-    // })
-    router.use(prefix("/:resource"), handlers.preloadResource);
-    router.get(prefix("/:resource/:id/attachments/:attachmentId"), handlers.downloadAttachment);
-    router.delete(prefix("/:resource/:id/attachments/:attachmentId"), handlers.deleteAttachment);
-    router.get(prefix("/:resource/:id"), handlers.getOne);
-    router.post(prefix("/:resource/:id/attachments"), handlers.attachFile);
-    router.put(prefix("/:resource/:id"), handlers.updateOne);
-    router.delete(prefix("/:resource/:id"), handlers.removeOne);
-    router.get(prefix("/:resource"), handlers.getAll);
-    router.post(prefix("/:resource"), handlers.createOne);
-    
-    return router;
+  return router;
 };

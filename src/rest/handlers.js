@@ -36,13 +36,13 @@ function Handler(fn) {
 function preloadResource(req, res, next) {
     const { pocket, user }  = req.ctx;
     const resourceName      = req.params.resource;
-    const resource          = pocket.resource(resourceName).withContext({ user: user, request: req })
+    const resource          = pocket.resource(resourceName);
 
     if (!resource) {
         return RESOURCE_NOT_FOUND.send(res);
     }
 
-    req.resource = resource;
+    req.resource = resource.withContext({ user: user, request: req });
     next();
 }
 
@@ -127,7 +127,7 @@ const attachFile = Handler((req, res) => {
     let busboy = new Busboy({ headers: req.headers });
     let promises = [];
 
-    busboy.on('file', (fieldname, file, filename) => {
+    busboy.on('file', (fieldname, file) => {
         promises.push(resource.attach(id, fieldname, file));
     });
 

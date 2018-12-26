@@ -1,6 +1,11 @@
 import { JsonService }  from "./JsonService"
 import config           from '../config'
 import Store            from "../store"
+import _                from "lodash"
+
+function ID(record) {
+  return _.isString(record) ? record : record._id;
+}
 
 class PocketService extends JsonService {
   constructor() {
@@ -37,6 +42,10 @@ class PocketService extends JsonService {
     return this.GET('/admin/schemas', {}, this.headers);
   }
 
+  async fetchRecord(resource, id) {
+    return this.GET(`/rest/${resource}/${id}`, {}, this.headers);
+  }
+
   async fetchRecords(resource, page = 1, pageSize = 25) {
     if (page < 1) {
       page = 1;
@@ -52,8 +61,12 @@ class PocketService extends JsonService {
     return this.PUT(`/rest/${resource}/${recordId}`, record, this.headers);
   }
 
-  async deleteRecord(resource, recordId, record) {
-    return this.DELETE(`/rest/${resource}/${recordId}`, {}, this.headers);
+  async deleteRecord(resource, record) {
+    return this.DELETE(`/rest/${resource}/${ID(record)}`, {}, this.headers);
+  }
+
+  async deleteAttachment(resource, record, attachmentId) {
+    return this.DELETE(`/rest/${resource}/${ID(record)}/attachments/${attachmentId}`, {}, this.headers);
   }
 }
 

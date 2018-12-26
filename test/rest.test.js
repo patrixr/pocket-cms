@@ -69,14 +69,12 @@ describe("Rest", () => {
 
     describe("Web Service /rest", () => {
 
-        before((done) => {
+        beforeEach(() => {
             config.testing.disableAuthentication = true;
-            done();
         });
 
-        after((done) => {
+        after(() => {
             config.testing.disableAuthentication = false;
-            done();
         });
 
         it("Should return empty array if the db is empty", (done) => {
@@ -200,7 +198,7 @@ describe("Rest", () => {
                 .expect(404);
         })
 
-        it("Should download an attachment from it's id", async () => {
+        it("Should download publicly an attachment from it's id", async () => {
             let post = await createPost();
             let { body } = await request(TestServer)
                 .post(`/rest/posts/${post._id}/attachments`)
@@ -210,6 +208,7 @@ describe("Rest", () => {
             expect(body._attachments[0].id).to.exist;
             expect(body._attachments[0].id).not.to.be.null;
 
+            config.testing.disableAuthentication = false;
             let { headers } = await request(TestServer)
                 .get(`/rest/posts/${post._id}/attachments/${body._attachments[0].id}`)
                 .expect(200);
