@@ -175,7 +175,7 @@ class Resource {
         await this.store.ready();
 
         let userId  = opts.userId || (this.context.user && this.context.user.id);
-        let data    = await this.validate(payload);
+        let data    = opts.skipValidation ? payload : await this.validate(payload);
 
         await this.runHooks({ record: data }).before('create', 'save');
 

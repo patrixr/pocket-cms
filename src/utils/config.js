@@ -27,8 +27,7 @@ module.exports = {
     datastore: {
         adapter: "disk",
         options: {
-            dataFolder,
-            uploadFolder
+            dataFolder
         }
     },
     filestore: {

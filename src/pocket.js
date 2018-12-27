@@ -52,6 +52,10 @@ class Pocket {
     }
 
 
+    static get Schema() {
+        return Schema;
+    }
+
     get Schema() {
         return Schema;
     }
