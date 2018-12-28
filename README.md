@@ -299,6 +299,17 @@ The following types are available :
 
 * `timestamp`
 
+#### CMS properties
+
+When records are created/updated the CMS automatically adds and keeps track of a number or *private* properties which **cannot** be updated manually. All those private properties start by underscore `_`.
+
+Currently those are:
+
+* `_id`
+* `_createdAt`
+* `_updatedAt`
+* `_createdBy`
+* `_attachments` the list of attachments
 
 #### Indexes
 
@@ -370,4 +381,27 @@ const cms = new Pocket();
 pocket.resource('posts', postSchema);
 ```
 
+### REST API
+
+For each resource created, a generic rest api is automatically created for it.
+
+Here's a rundown of the different endpoints
+
+* `GET /rest/{resource}` lists records for the given resource. Available options :
+	* `pageSize` - The number of records to return per page
+	* `page` - The page to return
+
+* `GET /rest/{resource}/{id}` returns a single record specified by `id`
+
+* `POST /rest/{resource}` creates a record of the `resource` type
+
+* `PUT /rest/{resource}/{id}` updates the record specified by `id` of the `resource` type
+
+* `DELETE /rest/{resource}/{id} deletes the record specified by `id`
+
+* `POST /rest/{resource}/{id}/attachments` uploads a file and a attach it to the record specified by `id`
+
+* `GET /rest/{resource}/{id}/attachments/{attachmentId}` downloads the attachment of a record
+
+* `DELETE /rest/{resource}/{id}/attachments/{attachmentId}` deletes the attachment of a record
 
