@@ -56,6 +56,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                     return done(err);
                 }
                 schema = new Schema({
+                    additionalProperties: false,
                     fields: {
                         "firstname": "string",
                         "lastname": "string",
@@ -70,7 +71,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
                 });
                 pocket = new Pocket(config);
                 resource = pocket.resource("person", schema);
-                pocket.jsonStore.ready().then(() => done());
+                resource.drop().then(done);
             });
         });
 
@@ -226,6 +227,7 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
         })
 
         it("Should support pagination", async () => {
+            await resource.drop();
             for (let i = 0; i < 10; ++i) {
                 await resource.create({ username: "random " + i })
             }

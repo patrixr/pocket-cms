@@ -37,6 +37,8 @@ Designed as a non-intrusive middleware. Pocket offers :
       - [Deleting an attachment](#deleting-an-attachment)
       - [Reading an attachment](#reading-an-attachment)
   - [Schema](#schema)
+    - [Indexes](#indexes)
+    - [Hooks](#hooks)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -81,7 +83,7 @@ new Pocket({
 })
 ```
 
-The following options are available: 
+The following options are available:
 
 | Key  | Description | Type | Default value |
 | ------------- | ------------- | ------------- | ------------- |
@@ -210,12 +212,13 @@ await cars.find({});
 
 ##### Reading an attachment
 
-`await resource.readAttachment(attachmentId)` will return a node stream of the file 
+`await resource.readAttachment(attachmentId)` will return a node stream of the file
 
 
 ### Schema
 
 Pocket exposes a `Schema` class which can be used to create a resource's schema.
+More details can be found on the [Pocket Schema](https://github.com/patrixr/pocket-schema) repo.
 
 e.g
 
@@ -224,21 +227,29 @@ const Pocket = require('pocket-cms');
 const { Schema } = Pocket;
 
 const carSchema = new Schema({
+	additionalProperties: false,
 	fields: {
+		name: {
+			type: 'string',
+			index: {
+				unique: true
+			}
+		}
 		brand: {
 			type: 'text',
 			maxLength: 64
 		},
 		noOfWheels: {
-			type: 'number'
+			type: 'number',
+			required: true,
 		},
 		color: {
 			type: 'select',
 			options: ['red', 'yellow', 'magenta']
 		},
-		tags: { 
-			type: 'array', 
-			items: { type: 'string' } 
+		tags: {
+			type: 'array',
+			items: { type: 'string' }
 		}
 	}
 });
@@ -247,17 +258,116 @@ const carSchema = new Schema({
 
 The following types are available :
 
-* `text|string`
-	* `maxLength` - The maximum length of the string
-* `number`
-* `date`
-* `email`
-* `password`
-* `object`
-* `select|enum`  
-	* `options` - **required** - A list of string options to select the value from
-* `array|list`
-	* `minItems` - The minimum number of items
-	* `items` - An optional type of the items
-* `map`
-	* `items` - An optional type of the items
+* `any`
+
+* `array|list`  - options:
+	* `items?` A field definition of the expected array items
+
+* `date`  - options:
+	* `format?` The expected date format (defaults to YYYY-MM-DD)
+
+* `datetime`
+
+* `email`  - options:
+	* `match?` A regular expression to match the email against
+
+* `map`  - options:
+	* `items?` A field definition of the expected map items
+
+* `multiselect`  - options:
+	* `options` List or options to select from. An async function can also be passed
+
+* `number`  - options:
+	* `min?` Minimum allowed value
+	* `max?` Maximum allowed value
+
+* `object|json`  - options:
+	* `schema?` Schema used to validate the object against
+
+* `password`  - options:
+	* `minLength?` The minimum length of the password
+
+* `select|enum`  - options:
+	* `options` List or options to select from. An async function can also be passed
+
+* `text|string`  - options:
+	* `minLength?` The minimum length of the string
+	* `maxLength?` The maximum length of the string
+	* `match?` A regular expression to match the string against
+
+* `time`
+
+* `timestamp`
+
+
+#### Indexes
+
+To mark a field as a database index, its schema field supports the `index` parameter. Which can either be :
+
+* A `true|false` value
+* An object with the following properties :
+	* **unique** `true|false`
+
+
+Example :
+
+```javascript
+const Pocket = require('pocket-cms');
+const { Schema } = Pocket;
+
+const person = new Schema({
+	fields: {
+		name: {
+			type: 'string',
+			index: {
+				unique: true
+			}
+		}
+});
+```
+
+#### Hooks
+
+Pre and Post hooks can be added to a schema which allow adding extra functionality and ACL to the CMS.
+
+Available api :
+
+* `schema.before(action, method)`
+* `schema.after(action, method)`
+
+Available methods
+
+* `create`
+* `remove`
+* `update`
+* `save`
+* `validate`
+* `read`
+
+Example usage
+
+```javascript
+const Pocket = require('pocket-cms');
+const { Schema } = Pocket;
+
+const postSchema = new Schema({
+	fields: {
+		message: {
+			type: 'string',
+		}
+	}
+})
+.before('save', async ({ record }, ctx) => {
+	const { user } = ctx;
+
+	if (await userCheck(user, record) === false) {
+		throw 'User should not save this record';
+	}
+});
+
+const cms = new Pocket();
+
+pocket.resource('posts', postSchema);
+```
+
+

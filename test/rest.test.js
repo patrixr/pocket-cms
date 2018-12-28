@@ -98,7 +98,7 @@ describe("Rest", () => {
         it("Should fail to create a record with an invalid schema", (done) => {
             request(TestServer)
                 .post('/rest/posts')
-                .send(_.extend({}, sampleData, { bad: 'property'}))
+                .send(_.extend({}, sampleData, { message: 123 }))
                 .expect(400)
                 .end(done);
         })

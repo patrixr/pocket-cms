@@ -1,7 +1,6 @@
-const _                      = require("lodash");
-const { Validator }          = require("jsonschema");
-const { JsonSchemaBuilder }  = require("./mapper");
+const _                      = require('lodash');
 const { asyncEach }          = require('../utils/helpers');
+const BaseSchema             = require('pocket-schema');
 
 const ALLOWED_ACTIONS = ['read', 'create', 'update', 'remove'];
 
@@ -12,50 +11,19 @@ const ACTION_ALIASES = {
   'get': 'read'
 };
 
-const ALIASES = {
-  "string": "text",
-  "json": "object",
-  "enum": "select",
-  "list": "array"
-}
-
-const builder = new JsonSchemaBuilder();
-
-class Schema {
-  constructor({ fields, additionalProperties }) {
-    this.fields = this.normalizeSchema(fields);
-    this.jsonSchema = builder.build(this.fields, { additionalProperties });
+class Schema extends BaseSchema {
+  constructor() {
+    super(...arguments);
     this.clearHooks();
     this.permissions = {};
   }
 
-  normalizeField(field) {
-    let normalized = _.isString(field) ? { type: field } : field;
-    if (ALIASES[normalized.type]) {
-      normalized.type = ALIASES[normalized.type]
-    }
-    if (normalized.schema) {
-      normalized.schema = this.normalizeSchema(normalized.schema);
-    }
-    if (normalized.items) {
-      normalized.items = this.normalizeField(normalized.items);
-    }
-    return normalized;
-  }
-
-  normalizeSchema(fields) {
-    for (let key in fields) {
-      fields[key] = this.normalizeField(fields[key]);
-    }
-    return fields;
-  }
-
   indices() {
     return _.chain(this.fields)
-      .pickBy(f => !!f.index)
-      .map(({ index }, key) => {
+      .filter('index')
+      .map(({ name, index }) => {
         return {
-          field: key,
+          field: name,
           unique: _.isObject(index) && !!index.unique
         };
       })
@@ -105,29 +73,6 @@ class Schema {
     }
     const rights = this.permissions[group];
     return _.includes(rights, action)
-  }
-
-  //
-  // ---- VALIDATION
-  //
-
-  validate(data, opts = {}) {
-    const {
-      additionalProperties = false,
-      ignoreRequired = false
-    } = opts;
-
-    let schema = _.extend({}, this.jsonSchema);
-    if (ignoreRequired) {
-      schema = _.omit(schema, "required");
-    }
-    if (additionalProperties) {
-      schema.additionalProperties = true;
-    }
-
-    return new Validator()
-      .validate(data, schema)
-      .errors.map(e => `${e.property} ${e.message}`);
   }
 
   //

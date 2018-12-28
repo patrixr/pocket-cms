@@ -11,7 +11,7 @@ logger.level = "info";
 
 const pocket = new Pocket();
 
-const post = new Schema({
+  const post = new Schema({
   fields: {
     type: {
       type: "select",

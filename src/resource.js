@@ -36,7 +36,7 @@ class Resource {
         this.store.ready().then(() => {
             _.each(this.getIndices(), ({ field, unique }) => {
                 this.store.setIndex(this.name, field, { unique: !!unique });
-            })
+            });
         });
     }
 
@@ -46,11 +46,12 @@ class Resource {
         return this.schema ? this.schema.indices() : [];
     }
 
-    async validate(data, opts = {}) {
+    async validate(payload, opts = {}) {
         let { isUpdate = false } = opts;
 
         // We don't try to validate internal properties
-        let stripped = _.omit(data, reservedProperties);
+        let privateProps = _.pick(payload, reservedProperties);
+        let stripped = _.omit(payload, reservedProperties);
 
         if (this.schema == null) {
             return stripped
@@ -58,17 +59,19 @@ class Resource {
 
         await this.runHooks({ record: stripped, schema : this.schema }).before('validate');
 
-        const errors = this.schema.validate(stripped, {
+        const { errors, data } = await this.schema.validate(stripped, {
             ignoreRequired: isUpdate
         });
 
-        await this.runHooks({ record: stripped, schema : this.schema, errors }).after('validate');
+        _.extend(data, privateProps);
+
+        await this.runHooks({ record: data, schema : this.schema, errors }).after('validate');
 
         if (errors.length > 0) {
             throw new Error(400, errors.join('\n'));
         }
 
-        return stripped;
+        return data;
     }
 
     // ---- Context
@@ -299,7 +302,7 @@ class Resource {
 
         await this.store.ready();
 
-        return await this.store.remove(this.name, { }, { multi: true });
+        return this.store.remove(this.name, { }, { multi: true });
     }
 
     /**
@@ -364,20 +367,6 @@ class Resource {
     }
 
     // ---- HOOKS
-
-    before(method, fn) {
-        if (!this.hooks.before[method]) {
-            this.hooks.before[method] = [];
-        }
-        this.hooks.before[method].push(fn);
-    }
-
-    after(method, fn) {
-        if (!this.hooks.after[method]) {
-            this.hooks.after[method] = [];
-        }
-        this.hooks.after[method].push(fn);
-    }
 
     runHooks(data) {
         return this.schema.runHooks(data, this.context);
