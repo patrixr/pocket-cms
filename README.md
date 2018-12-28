@@ -227,31 +227,31 @@ const Pocket = require('pocket-cms');
 const { Schema } = Pocket;
 
 const carSchema = new Schema({
-	additionalProperties: false,
-	fields: {
-		name: {
-			type: 'string',
-			index: {
-				unique: true
-			}
-		}
-		brand: {
-			type: 'text',
-			maxLength: 64
-		},
-		noOfWheels: {
-			type: 'number',
-			required: true,
-		},
-		color: {
-			type: 'select',
-			options: ['red', 'yellow', 'magenta']
-		},
-		tags: {
-			type: 'array',
-			items: { type: 'string' }
-		}
+    additionalProperties: false,
+    fields: {
+        name: {
+	    type: 'string',
+	    index: {
+		unique: true
+	    }
 	}
+	brand: {
+	    type: 'text',
+	    maxLength: 64
+	},
+	noOfWheels: {
+	    type: 'number',
+	    required: true,
+	},
+	color: {
+	    type: 'select',
+	    options: ['red', 'yellow', 'magenta']
+	},
+	tags: {
+	    type: 'array',
+	    items: { type: 'string' }
+	}
+    }
 });
 
 ```
@@ -316,13 +316,13 @@ const Pocket = require('pocket-cms');
 const { Schema } = Pocket;
 
 const person = new Schema({
-	fields: {
-		name: {
-			type: 'string',
-			index: {
-				unique: true
-			}
-		}
+    fields: {
+        name: {
+            type: 'string',
+	    index: {
+	        unique: true
+	}
+    }
 });
 ```
 
@@ -351,18 +351,18 @@ const Pocket = require('pocket-cms');
 const { Schema } = Pocket;
 
 const postSchema = new Schema({
-	fields: {
-		message: {
-			type: 'string',
-		}
+    fields: {
+        message: {
+	    type: 'string',
 	}
+    }
 })
 .before('save', async ({ record }, ctx) => {
-	const { user } = ctx;
+    const { user } = ctx;
 
-	if (await userCheck(user, record) === false) {
-		throw 'User should not save this record';
-	}
+    if (await userCheck(user, record) === false) {
+        throw 'User should not save this record';
+    }
 });
 
 const cms = new Pocket();
