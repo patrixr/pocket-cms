@@ -37,8 +37,10 @@ Designed as a non-intrusive middleware. Pocket offers :
       - [Deleting an attachment](#deleting-an-attachment)
       - [Reading an attachment](#reading-an-attachment)
   - [Schema](#schema)
+    - [CMS properties](#cms-properties)
     - [Indexes](#indexes)
     - [Hooks](#hooks)
+  - [REST API](#rest-api)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
