@@ -1,6 +1,6 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
