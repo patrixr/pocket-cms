@@ -1,6 +1,6 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
@@ -55,7 +55,7 @@
     "modifyjs": "^0.3.1",
     "mongodb": "^3.1.7",
     "nedb": "^1.8.0",
-    "pocket-schema": "^1.0.3",
+    "pocket-schema": "^1.0.5",
     "q": "^1.5.1",
     "uuid": "^3.2.1"
   }

@@ -265,6 +265,8 @@ The following types are available :
 * `array|list`  - options:
 	* `items?` A field definition of the expected array items
 
+* `checkbox|boolean`
+
 * `date`  - options:
 	* `format?` The expected date format (defaults to YYYY-MM-DD)
 
