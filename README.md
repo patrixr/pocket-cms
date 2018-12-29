@@ -509,10 +509,10 @@ const { Schema } = Pocket;
 
 const postSchema = new Schema({
     fields: {
-	    message: {
-	    type: 'string',
+        message: {
+        type: 'string'
+        }
     }
-  }
 })
 .allow('users', [ 'read' ])
 .allow('moderators', [ 'read', 'create', 'update', 'delete' ])
@@ -528,10 +528,10 @@ e.g
 ```javascript
 
 pocket.resource('_groups').create({
-	name: 'moderators',
-	permissions: {
-		'*': ['read'],
-		'posts': ['read', 'create', 'update', 'delete' ]
-	}
+    name: 'moderators',
+    permissions: {
+        '*': ['read'],
+        'posts': ['read', 'create', 'update', 'delete' ]
+    }
 });
 ```
