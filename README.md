@@ -469,6 +469,14 @@ Here's a rundown of the different endpoints
 
 * `DELETE /rest/{resource}/{id}/attachments/{attachmentId}` deletes the attachment of a record
 
+
+The resource key of the endpoints listed above can all be prefixed with a user id to filter on records createdBy that user.  
+  
+e.g  
+  
+`GET /rest/users/:userId/{resource}/{id}` will return only records created by the user specified by `userId`
+
+
 #### ACL
 
 There are multiple rules and ways to control the access of resources by users.
