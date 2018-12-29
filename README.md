@@ -48,9 +48,9 @@ Designed as a non-intrusive middleware. Pocket offers :
     - [Authentication](#authentication)
     - [Resource management](#resource-management)
     - [ACL](#acl)
-      - [1 - Admins](#1---admins)
-      - [2 - Schema access configuration](#2---schema-access-configuration)
-      - [3 - Group access configuration](#3---group-access-configuration)
+      - [Admins](#1---admins)
+      - [Schema access configuration](#2---schema-access-configuration)
+      - [Group access configuration](#3---group-access-configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
