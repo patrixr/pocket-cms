@@ -23,13 +23,16 @@
   import TextField      from './inputs/TextField'
   import PasswordField  from './inputs/PasswordField'
   import NumberField    from './inputs/NumberField'
+  import SelectField    from './inputs/SelectField'
   import _              from 'lodash'
 
   const INPUT_MAPPING = {
     'text':       'TextField',
     'string':     'TextField',
     'number':     'NumberField',
-    'password':   'PasswordField'
+    'password':   'PasswordField',
+    'select':     'SelectField',
+    'enum':       'SelectField',
   };
 
   export default {
@@ -38,7 +41,8 @@
       StringList,
       TextField,
       NumberField,
-      PasswordField
+      PasswordField,
+      SelectField
     },
     data() {
       let inputComponent = '';
