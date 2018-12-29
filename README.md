@@ -48,9 +48,9 @@ Designed as a non-intrusive middleware. Pocket offers :
     - [Authentication](#authentication)
     - [Resource management](#resource-management)
     - [ACL](#acl)
-      - [Admins](#1---admins)
-      - [Schema access configuration](#2---schema-access-configuration)
-      - [Group access configuration](#3---group-access-configuration)
+      - [Admins](#admins)
+      - [Schema access configuration](#schema-access-configuration)
+      - [Group access configuration](#group-access-configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -481,7 +481,7 @@ The following actions exist:
 * update
 * remove
 
-##### 1 - Admins
+##### Admins
 
 Users from the `admins` group are whitelisted and have permission to make any change to any resources.
 
@@ -491,7 +491,7 @@ Private CMS resources (prefixed with `_`) cannot be modified by any other group.
 * `_groups`
 
 
-##### 2 - Schema access configuration
+##### Schema access configuration
 
 A entire resource can be configured to only be accessible to a certain set of groups.
 
@@ -519,7 +519,7 @@ const postSchema = new Schema({
 ```
   
 
-##### 3 - Group access configuration
+##### Group access configuration
 
 A group can be given access to a resource through its `permissions` field.
 
