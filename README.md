@@ -42,7 +42,15 @@ Designed as a non-intrusive middleware. Pocket offers :
     - [CMS properties](#cms-properties)
     - [Indexes](#indexes)
     - [Hooks](#hooks)
+  - [Users](#users)
+    - [Groups](#groups)
   - [REST API](#rest-api)
+    - [Authentication](#authentication)
+    - [Resource management](#resource-management)
+    - [ACL](#acl)
+      - [1 - Admins](#1---admins)
+      - [2 - Schema access configuration](#2---schema-access-configuration)
+      - [3 - Group access configuration](#3---group-access-configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
