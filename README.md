@@ -387,11 +387,61 @@ const cms = new Pocket();
 pocket.resource('posts', postSchema);
 ```
 
+### Users
+
+The Pocket CMS class exposes a user manager that can be used to create/remove and authenticate users.
+
+e.g
+
+```javascript
+const Pocket = require('pocket-cms');
+
+const cms = new Pocket();
+
+// Creating a user
+await pocket.users.create('username', 'password', [ 'users' ]);
+
+// Authenticating a user
+const user = await pocket.users.auth('username', 'password');
+
+// Extracting a user from the JWT auth token
+const user = await pocket.users.fromJWT(token)
+```
+
+The underlying resource is named `_users`
+
+#### Groups
+
+By default the following groups are created :
+
+* `admins`
+* `users`
+
+Groups can be added by using the underlying resource `_groups`  
+
 ### REST API
 
 For each resource created, a generic rest api is automatically created for it.
 
 Here's a rundown of the different endpoints
+
+#### Authentication
+
+* `POST /users/signup` to create a user. The following JSON body is expected
+	* `username`
+	* `password`
+	* `groups` (defaults to `['users']`)
+
+* `POST /users/login` to log in a user.   
+**Important**: This endpoint will return a Java Web Token, which should be included into following requests -> `Authorization: Bearer <token>`. The following JSON body is expected
+	* `username`
+	* `password`  
+
+* `POST /users/logout` to logout out. **NOTE:** As authentication is done via JWT, this endpoint doesn't actually do anything. It exists as a placeholder for future additions (hooks/logs/etc)
+
+* `GET /users/status` to retrieve the user and status of an existing JWT Token
+
+#### Resource management
 
 * `GET /rest/{resource}` lists records for the given resource. Available options :
 	* `pageSize` - The number of records to return per page
@@ -411,3 +461,69 @@ Here's a rundown of the different endpoints
 
 * `DELETE /rest/{resource}/{id}/attachments/{attachmentId}` deletes the attachment of a record
 
+#### ACL
+
+There are multiple rules and ways to control the access of resources by users.
+
+We either `allow` or `deny` actions on certain resources.
+The following actions exist:
+
+* read
+* create
+* update
+* remove
+
+##### 1 - Admins
+
+Users from the `admins` group are whitelisted and have permission to make any change to any resources.
+
+Private CMS resources (prefixed with `_`) cannot be modified by any other group. Currently those are :
+
+* `_users`
+* `_groups`
+
+
+##### 2 - Schema access configuration
+
+A entire resource can be configured to only be accessible to a certain set of groups.
+
+That is done on the schema level with the following 2 methods :
+* `schema.allow(group, actions[])` 
+* `deny(group, actions[])`  
+
+**Note:** A wildcard `*` can be used as a group name to represent all of them
+
+Example :
+
+```javascript
+const Pocket = require('pocket-cms');
+const { Schema } = Pocket;
+
+const postSchema = new Schema({
+    fields: {
+	    message: {
+	    type: 'string',
+    }
+  }
+})
+.allow('users', [ 'read' ])
+.allow('moderators', [ 'read', 'create', 'update', 'delete' ])
+```
+  
+
+##### 3 - Group access configuration
+
+A group can be given access to a resource through its `permissions` field.
+
+e.g
+
+```javascript
+
+pocket.resource('_groups').create({
+	name: 'moderators',
+	permissions: {
+		'*': ['read'],
+		'posts': ['read', 'create', 'update', 'delete' ]
+	}
+});
+```
