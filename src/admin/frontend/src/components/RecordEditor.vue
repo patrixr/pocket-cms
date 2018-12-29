@@ -26,14 +26,14 @@
         <!-- JSON Editor -->
         <el-tab-pane>
           <span slot="label"><i class="el-icon-document"></i> JSON </span>
-          <div class="resource-input" v-for="(field, fieldName) in fields" :key='fieldName'>
+          <div class="resource-input" v-for="field in fields" :key='field.name'>
             <div class="label">
-              {{ fieldName | camelToText | capitalize }}
+              {{ field.name | camelToText | capitalize }}
               <span class="index-label" v-if="field.index">
                 index[unique={{ field.index.unique ? 'true' : 'false' }}]
               </span>
             </div>
-            <record-input :record='editableRecord' :field='field' :fieldName='fieldName' />
+            <record-input :record='editableRecord' :field='field' />
           </div>
           <div>
             <el-row>

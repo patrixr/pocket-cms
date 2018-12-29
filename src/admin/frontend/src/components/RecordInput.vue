@@ -1,55 +1,57 @@
 <template>
   <div>
-    <!-- STRING -->
-    <div v-if="field.type === 'text'">
-      <el-input placeholder="Text..." v-model="record[fieldName]"></el-input>
+    <div v-if="inputComponent">
+      <component
+        :is="inputComponent"
+        :record="record"
+        :field="field"
+        class="tab"
+      />
     </div>
 
-    <!-- PASSWORD -->
-    <div v-else-if="field.type === 'password'">
-      <el-input placeholder="Set password..." v-model="record[fieldName]" type="password"></el-input>
-    </div>
-
-    <!-- NUMBER -->
-    <div v-else-if="field.type === 'number'">
-      <el-input-number v-model="record[fieldName]"></el-input-number> <!-- :min="1" :max="10" -->
-    </div>
-
-    <!-- List of String -->
-    <div v-else-if="isStringList()">
-      <StringList v-bind:record='record' v-bind:fieldName='fieldName' v-bind:field='field' />
-    </div>
-
-    <div v-else-if="field.type === 'select'">
-      <el-select v-model="record[fieldName]" filterable="" no-match-text="No match" default-first-option placeholder="Select">
-        <el-option v-for="opt in field.options" :key="opt" :label="opt" :value="opt" />
-      </el-select>
-    </div>
-
-    <div class='unsupported-input' v-else>
+    <div v-else class='unsupported-input'>
       Complex type - <el-button v-on:click="showRaw = !showRaw" type="text">{{ showRaw ? 'hide raw' : 'view raw' }}</el-button>
       <pre v-if="showRaw">
-        {{ record[fieldName] | prettyJSON }}
+        {{ record[field.name] | prettyJSON }}
       </pre>
     </div>
-
   </div>
 </template>
 
 <script>
-  import StringList from './inputs/StringList'
-  import _          from 'lodash'
+  import StringList     from './inputs/StringList'
+  import TextField      from './inputs/TextField'
+  import PasswordField  from './inputs/PasswordField'
+  import NumberField    from './inputs/NumberField'
+  import _              from 'lodash'
+
+  const INPUT_MAPPING = {
+    'text':       'TextField',
+    'string':     'TextField',
+    'number':     'NumberField',
+    'password':   'PasswordField'
+  };
 
   export default {
-    props: ['record', 'fieldName', 'field'],
+    props: ['record', 'field'],
     components: {
       StringList,
-      Map
+      TextField,
+      NumberField,
+      PasswordField
     },
     data() {
+      let inputComponent = '';
+
+      if (this.isStringList()) {
+        inputComponent = 'StringList';
+      } else {
+        inputComponent = INPUT_MAPPING[this.field.type];
+      }
+
       return {
-        newStringItem: '',
         showRaw: false,
+        inputComponent
       }
     },
     methods: {
@@ -61,7 +63,7 @@
         if (!field.items) {
           return false;
         }
-        return !!_.find(['text'], (type) => {
+        return !!_.find(['text', 'string'], (type) => {
           return field.items === type || field.items.type === type;
         });
       }

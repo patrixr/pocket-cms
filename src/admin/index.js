@@ -41,7 +41,7 @@ module.exports = function(pocket) {
   // They are used to generate the list of resources, and the input fields
   //
   router.use("/schemas", adminOnly, (req, res) => {
-    const schemas = _.map(pocket.resources, ({ schema }, name) => {
+    const schemas = _.map(pocket.resources, ({ schema }) => {
       return {
         name,
         fields: schema.fields

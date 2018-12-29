@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  props: ['record', 'fieldName', 'field'],
+  props: ['record', 'field'],
   data() {
     return {
       inputVisible: false,
@@ -27,10 +27,10 @@ export default {
   },
   computed: {
     list() {
-      if (!this.record[this.fieldName]) {
-        this.record[this.fieldName] = [];
+      if (!this.record[this.field.name]) {
+        this.record[this.field.name] = [];
       }
-      return this.record[this.fieldName];
+      return this.record[this.field.name];
     }
   },
   methods: {
