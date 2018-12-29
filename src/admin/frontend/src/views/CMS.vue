@@ -4,19 +4,22 @@
 
       <!-- Side Menu -->
       <el-aside class="side-panel">
+        <div class="title">Pocket CMS</div>
         <el-menu :default-openeds="['0']">
-          <el-submenu v-for="(section, sectionIdx) in panelSections" :index="sectionIdx.toString()" :key="sectionIdx">
-
+          <el-submenu v-if="section.isSection" v-for="(section, sectionIdx) in panelSections" :index="sectionIdx.toString()" :key="sectionIdx">
             <template slot="title">
-              <i class="el-icon-app"></i>
+              <i :class="`el-icon-${section.icon}`"></i>
               {{ section.name }}
             </template>
 
-            <el-menu-item v-for="(it, idx) in section.items" :index="idx.toString()" v-bind:key="it.key" v-on:click="selectItem(it)">
-              {{ it.name }}
+            <el-menu-item  v-if="!item.isSection" v-for="(item, idx) in section.items" @click="item.onClick" :index="sectionIdx.toString() + idx.toString()" :key="item.key">
+              <i :class="'el-icon-' + item.icon"></i> {{ item.name }}
             </el-menu-item>
-
           </el-submenu>
+
+          <el-menu-item v-if="!item.isSection" v-for="(item, idx) in panelSections" @click="item.onClick" :index="idx.toString()" :key="idx">
+              <i :class="'el-icon-' + item.icon"></i> {{ item.name }}
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -65,22 +68,57 @@
         "schemas"
       ]),
       panelSections() {
-        if (!this.schemas || !this.schemas.length === 0) {
-          return [];
+
+        const SECTION = (name, icon, items) => {
+          return {
+            name,
+            icon,
+            key: name,
+            isSection: true,
+            items
+          };
         }
-        return [
-          {
-            name: "Resources",
-            items: this.schemas.map(sch => ({
-              name: sch.name,
-              key: sch.name,
-              component: 'RecordEditor',
-              options: {
-                resource: sch.name
-              }
-            }))
-          }
-        ];
+
+        const COMPONENT_ITEM = (name, icon, component, options = {}) => {
+          let item = {
+            name,
+            icon,
+            component,
+            options,
+            key: name,
+            isComponent: true,
+            isAction: false
+          };
+          item.onClick = () => this.selectItem(item);
+          return item;
+        }
+
+        const ACTION_ITEM = (name, icon, action) => {
+          return {
+            name,
+            icon,
+            key: name,
+            onClick: action,
+            isComponent: false,
+            isAction: true
+          };
+        }
+
+        const hasSchemas = this.schemas || this.schemas.length > 0;
+
+        return _.compact([
+          hasSchemas && SECTION('Resources', 'menu', this.schemas.map(sch => {
+            return COMPONENT_ITEM(sch.name, null, 'RecordEditor', { resource: sch.name });
+          })),
+          COMPONENT_ITEM('Stats', 'service', 'div'),
+          COMPONENT_ITEM('Logs', 'tickets', 'div'),
+          COMPONENT_ITEM('API Keys', 'mobile-phone', 'div'),
+          COMPONENT_ITEM('Plugins', 'share', 'div'),
+          ACTION_ITEM('Logout', 'close', () => {
+            this.$store.dispatch("logout");
+            this.$router.replace('/');
+          })
+        ]);
       }
     }
   };
@@ -102,6 +140,14 @@
         width: 200px;
         height: 100%;
         border-right: 1px solid #eee;
+
+        .title {
+          width: 100%;
+          text-align: center;
+          margin-top: 10px;
+          margin-bottom: 10px;
+          color: gray;
+        }
 
         .el-menu {
           border-right: none;
