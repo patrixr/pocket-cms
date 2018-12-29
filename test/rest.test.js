@@ -387,14 +387,27 @@ describe("Rest", () => {
 
         before(async () => {
             await pocket.resource('_groups').create({ name: 'specialGroup' });
+            await pocket.resource('_groups').create({ name: 'noPermissionsGroup', permissions: {} });
+            await pocket.resource('_groups').create({
+                name: 'readGroup',
+                permissions: {
+                    'posts': ['read']
+                }
+            });
+            await pocket.resource('_groups').create({
+                name: 'createGroup',
+                permissions: {
+                    'posts': ['create']
+                }
+            });
         });
 
         beforeEach(async () => {
             config.testing.disableAuthentication = false;
             await userManager.create("adminUser", "password", [ "admins" ]),
-            await userManager.create("noPermissionUser", "password", [ "users" ]),
-            await userManager.create("readUser", "password", [ "users" ], { "posts": [ "read" ] }),
-            await userManager.create("createUser", "password", [ "users" ], { "posts": [ "create" ] }),
+            await userManager.create("noPermissionUser", "password", [ "noPermissionsGroup" ]),
+            await userManager.create("readUser", "password", [ "users" ]),
+            await userManager.create("createUser", "password", [ "createGroup" ]),
             await userManager.create("specialGroupUser", "password", [ "specialGroup" ])
         })
 

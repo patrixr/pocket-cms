@@ -18,7 +18,7 @@ class Policies {
   }
 
   middleware() {
-    return (req, res, next) => {
+    return async (req, res, next) => {
       let resolved = false;
 
       const allow = () => {
@@ -37,7 +37,7 @@ class Policies {
       for (let i = 0; !resolved && i < this.rules.length; ++i) {
         const { fn } = this.rules[i];
         try {
-          fn(req, allow, deny);
+          await fn(req, allow, deny);
         } catch (e) {
           if (!resolved) {
             return Error.fromException(e).send(res);
@@ -102,11 +102,11 @@ policies.rule("User can access resource if his/her group is whitelisted by the s
   }
 });
 
-policies.rule("User can access resource if his group has permission", (req, allow, deny) => {
+policies.rule("User can access resource if his group has permission", async (req, allow, deny) => {
   const resource  = req.params.resource;
   const action    = ACTION_MAP[req.method.toUpperCase()];
 
-  if (req.ctx.user.isAllowed(action, resource)) {
+  if (await req.ctx.user.isAllowed(action, resource)) {
     allow();
   }
 });

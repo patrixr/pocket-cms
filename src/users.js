@@ -33,15 +33,13 @@ class User {
         this.hash               = null;
         this.username           = null;
         this.groups             = null;
-        this.permissions        = null;
     }
 
     toPlainObject() {
         return {
             _id:            this.id,
             username:       this.username,
-            groups:         this.groups,
-            permissions:    this.permissions
+            groups:         this.groups
         };
     }
 
@@ -54,15 +52,10 @@ class User {
     }
 
     async save() {
-        for (let res in this.permissions) {
-            this.permissions[res] = this.permissions[res].map(action => action.toLowerCase());
-        }
-
         const json = {
             hash:           this.hash,
             username:       this.username,
-            groups:         this.groups,
-            permissions:    this.permissions
+            groups:         this.groups
         }
         if (this.id) {
             return this.resource.mergeOne(this.id, json);
@@ -72,12 +65,32 @@ class User {
         return this;
     }
 
-    isAllowed(action, resourceName) {
+    async isAllowed(action, resourceName) {
+        const permissions = await this.getPermissions();
         action = action.toLowerCase();
         return !!_.find([ "*", resourceName ], (key) => {
-            const allowedActions = this.permissions[key] || [];
+            const allowedActions = permissions[key] || [];
             return _.find(allowedActions, (it) => it === action);
         });
+    }
+
+    async getPermissions() {
+        const permissions = {};
+        const mergeStrategy = function customizer(objValue, srcValue) {
+            if (_.isArray(objValue)) {
+              return _.uniq(objValue.concat(srcValue));
+            }
+        };
+
+        const groups = await this.userManager.loadGroups();
+
+        _.each(groups, (group) => {
+            if (_.includes(this.groups, group.name)) {
+                _.mergeWith(permissions, group.permissions, mergeStrategy)
+            }
+        });
+
+        return permissions;
     }
 
     isAdmin() {
@@ -109,16 +122,7 @@ class UserManager {
                         type: "string"
                     }
                 },
-                userData: "object",
-                permissions: {
-                    type: "map",
-                    items: {
-                        type: "array",
-                        items: {
-                            type : "string"
-                        }
-                    }
-                }
+                userData: "object"
             },
             additionalProperties: true
         })
@@ -216,6 +220,10 @@ class UserManager {
 
     // ---- METHODS
 
+    async loadGroups() {
+        return this.pocket.resource('_groups').findAll();
+    }
+
     hashPassword(password) {
         return crypto.hash(password)
     }
@@ -237,7 +245,6 @@ class UserManager {
         user.username       = userRecord.username;
         user.groups         = userRecord.groups;
         user.hash           = userRecord.hash;
-        user.permissions    = userRecord.permissions;
         user.id             = userRecord._id;
 
         return user;
@@ -251,7 +258,7 @@ class UserManager {
      * @param {*} groups
      * @returns {User} a new user
      */
-    async create(username, password, groups = [ "users" ], permissions = {}) {
+    async create(username, password, groups = [ "users" ]) {
         await this.ready();
 
         if (_.isString(groups)) {
@@ -266,7 +273,6 @@ class UserManager {
         let user            = new User(this, this.config);
         user.username       = username;
         user.groups         = groups;
-        user.permissions    = permissions;
         user.hash           = await this.hashPassword(password);
 
         return user.save();
@@ -281,7 +287,6 @@ class UserManager {
         user.id             = record._id;
         user.groups         = record.groups;
         user.username       = record.username;
-        user.permissions    = record.permissions;
         user.hash           = record.hash;
         return user;
     }
