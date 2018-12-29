@@ -2,6 +2,8 @@
 
 ![](https://travis-ci.org/patrixr/pocket-cms.svg?branch=master)
 
+![](http://g.recordit.co/WuTDs2Cl8Z.gif)
+
 ### A pocket sized CMS written for Node and Express.
 
 Designed as a non-intrusive middleware. Pocket offers :
