@@ -39,14 +39,16 @@
 <script>
   import _                          from "lodash";
   import router                     from "../router";
-  import RecordEditor             from "../components/RecordEditor";
+  import RecordEditor               from "../components/RecordEditor";
+  import Monitor                    from "../components/Monitor";
 
   import { mapActions, mapGetters } from "vuex";
 
   const CMSView = {
     name: "cms",
     components: {
-      RecordEditor
+      RecordEditor,
+      Monitor
     },
     created() {
       this.loadSchemas();
@@ -110,7 +112,7 @@
           hasSchemas && SECTION('Resources', 'menu', this.schemas.map(sch => {
             return COMPONENT_ITEM(sch.name, null, 'RecordEditor', { resource: sch.name });
           })),
-          COMPONENT_ITEM('Stats', 'service', 'div'),
+          COMPONENT_ITEM('Monitoring', 'service', 'Monitor'),
           COMPONENT_ITEM('Logs', 'tickets', 'div'),
           COMPONENT_ITEM('API Keys', 'mobile-phone', 'div'),
           COMPONENT_ITEM('Plugins', 'share', 'div'),

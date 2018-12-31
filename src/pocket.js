@@ -1,18 +1,17 @@
-const Q                = require("q");
-const rest             = require("./rest");
-const authentication   = require("./authentication");
-const Resource         = require('./resource');
-const _                = require('lodash');
-const defaultConfig    = require('./utils/config');
-const express          = require('express');
-const stores           = require('./stores');
-const { UserManager }  = require("./users");
-const session          = require('./authentication/session');
-const admin            = require('./admin');
-const Schema           = require("./schema");
-const {
-    INTERNAL_ERROR
-} = require('./utils/errors');
+const Q                 = require("q");
+const rest              = require("./rest");
+const authentication    = require("./authentication");
+const Resource          = require('./resource');
+const _                 = require('lodash');
+const defaultConfig     = require('./utils/config');
+const express           = require('express');
+const stores            = require('./stores');
+const { UserManager }   = require("./users");
+const session           = require('./authentication/session');
+const admin             = require('./admin');
+const Schema            = require("./schema");
+const monitor           = require("./monitor");
+const cron              = require("./utils/cron");
 
 
 /**
@@ -32,6 +31,9 @@ class Pocket {
         // --- Setup database
         this.jsonStore = stores.createJsonStore(this);
         this.fileStore = stores.createFileStore(this);
+
+        // --- Cron
+        this.cron = cron(this);
 
         // --- Setup user manager
         this.users = new UserManager(this);
@@ -141,6 +143,8 @@ class Pocket {
 
         app.use("/admin", admin(this));
 
+        app.use("/monitor", monitor(this));
+
         return app;
     }
 
@@ -165,7 +169,6 @@ class Pocket {
         await this.jsonStore.close();
         await this.fileStore.close();
     }
-
 }
 
 module.exports = Pocket;

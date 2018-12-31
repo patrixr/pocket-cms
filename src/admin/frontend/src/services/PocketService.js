@@ -46,6 +46,10 @@ class PocketService extends JsonService {
     return this.GET(`/rest/${resource}/${id}`, {}, this.headers);
   }
 
+  async fetchMonitoringStats() {
+    return this.GET(`/monitor/stats`, {}, this.headers);
+  }
+
   async fetchPage(resource, page = 1, pageSize = 25) {
     if (page < 1) {
       page = 1;
