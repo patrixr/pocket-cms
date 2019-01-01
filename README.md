@@ -9,7 +9,7 @@
 Designed as a non-intrusive middleware. Pocket offers :
 
 * Automatic API generation
-* Schema validation ([Pocket Schema](github.com/patrixr/pocket-schema))
+* Schema validation ([pocket schema](https://github.com/patrixr/pocket-schema))
 * User and session management
 * Admin panel
 * Multi-db support (Currently Mongo and Nedb)
