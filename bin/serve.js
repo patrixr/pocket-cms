@@ -18,7 +18,7 @@ const pocket = new Pocket();
       options: ["media", "statistics", "achievement"]
     },
     message: "string",
-    stats: {
+    meta: {
       type: "list",
       minItems: 1,
       items: {

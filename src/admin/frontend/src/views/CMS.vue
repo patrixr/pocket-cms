@@ -112,10 +112,10 @@
           hasSchemas && SECTION('Resources', 'menu', this.schemas.map(sch => {
             return COMPONENT_ITEM(sch.name, null, 'RecordEditor', { resource: sch.name });
           })),
-          COMPONENT_ITEM('Monitoring', 'service', 'Monitor'),
-          COMPONENT_ITEM('Logs', 'tickets', 'div'),
-          COMPONENT_ITEM('API Keys', 'mobile-phone', 'div'),
-          COMPONENT_ITEM('Plugins', 'share', 'div'),
+          COMPONENT_ITEM('Servers', 'service', 'Monitor'),
+          COMPONENT_ITEM('Logs (x)', 'tickets', 'div'),
+          COMPONENT_ITEM('API Keys (x)', 'mobile-phone', 'div'),
+          COMPONENT_ITEM('Plugins (x)', 'share', 'div'),
           ACTION_ITEM('Logout', 'close', () => {
             this.$store.dispatch("logout");
             this.$router.replace('/');
