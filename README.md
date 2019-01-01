@@ -1,5 +1,7 @@
 # Pocket CMS
 
+![](https://forthebadge.com/images/badges/uses-js.svg)
+![](https://forthebadge.com/images/badges/made-with-vue.svg)
 ![](https://travis-ci.org/patrixr/pocket-cms.svg?branch=master)
 
 ### A pocket sized CMS written for Node and Express.
