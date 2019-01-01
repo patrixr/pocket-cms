@@ -2,8 +2,6 @@
 
 ![](https://travis-ci.org/patrixr/pocket-cms.svg?branch=master)
 
-![](http://g.recordit.co/WuTDs2Cl8Z.gif)
-
 ### A pocket sized CMS written for Node and Express.
 
 Designed as a non-intrusive middleware. Pocket offers :
@@ -13,6 +11,15 @@ Designed as a non-intrusive middleware. Pocket offers :
 * Admin panel
 * Multi-db support (Currently Mongo and Nedb)
 * File uploads
+* Server stats
+
+Features planned: 
+
+* Logs
+* API Keys
+* Plugin support
+
+![](http://g.recordit.co/nCibS69Xzw.gif)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
