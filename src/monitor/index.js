@@ -3,13 +3,17 @@ const express     = require('express');
 const system      = require('systeminformation');
 const Schema      = require('../schema');
 const Cache       = require('../utils/cache');
+const env         = require('../utils/env');
 const {
   convert,
+  minutes,
   days
 } = require('../utils/units');
 const {
   FORBIDDEN
 } = require('../utils/errors');
+
+const PING_INTERVAL = minutes(5);
 
 /**
  * Express middleware to create monitoring endpoints
@@ -22,27 +26,39 @@ module.exports = function (pocket) {
   // -----
   //  SETUP RESOURCE
   // -----
-  const sysStats = pocket.resource('_usage', new Schema({
+  const processes = pocket.resource('_processes', new Schema({
     fields: {
       machineId: {
-        type: 'string'
+        type: 'string',
+        required: true
+      },
+      pid: {
+        type: 'number',
+        required: true
+      },
+      uptime: {
+        type: 'number',
+        required: true
+      },
+      lastPing: {
+        type: 'timestamp',
+        required: true
+      },
+      ram: {
+        type: 'number',
+        required: true
+      },
+      alive: {
+        type: 'boolean',
+        computed: true,
+        compute(process) {
+          return Date.now() - process.lastPing < PING_INTERVAL + minutes(2);
+        }
       },
       machineInfo: {
         type: 'map',
         items: {
           type: 'string'
-        }
-      },
-      stats: {
-        type: 'map',
-        items: {
-          type: 'object',
-          schema: new Schema({
-            fields: {
-              values: 'map',
-              unit: 'string'
-            }
-          })
         }
       }
     }
@@ -81,80 +97,31 @@ module.exports = function (pocket) {
     return output;
   });
 
-  const getLiveStats = async () => {
-    const [ cpuLoad, mem ] = await Promise.all([
-      system.currentLoad(),
-      system.mem()
-    ]);
-
-    let output = {
-      "CPU Usage": {
-        values: {
-          'total': cpuLoad.currentload,
-          'user': cpuLoad.currentload_user,
-          'sytem': cpuLoad.currentload_system
-        },
-        unit: '%'
-      },
-      "Memory usage": {
-        values: {
-          'Current': convert.to.gigabytes(mem.used).toFixed(1),
-          'Total': convert.to.gigabytes(mem.total).toFixed(1),
-        },
-        unit: 'GB'
-      }
-    };
-    return output;
-  };
-
-  const cron = pocket.cron.every(5, 'minutes').perNode.do('Server monitoring routine', async () => {
-    await sysStats.remove({
-      _createdAt: { $lte: Date.now() - days(3) }
-    });
-
-
-    const [ machineInfo, liveStats, mid ] = await Promise.all([
+  const cron = pocket.cron.every(5, 'minutes').do('Process pinging', async () => {
+    const pid     = process.pid;
+    const uptime  = Math.floor(process.uptime());
+    const [
+      machineInfo,
+      machineId
+    ]  = await Promise.all([
       getMachineInfo(),
-      getLiveStats(),
       getMachineId()
     ]);
 
-    await sysStats.create({
-      machineId:    mid,
-      machineInfo:  machineInfo,
-      stats:        liveStats
+    await processes.upsertOne({ machineId, pid }, {
+      machineId,
+      pid,
+      machineInfo,
+      uptime,
+      lastPing: Date.now(),
+      ram: convert.to.megabytes(process.memoryUsage().heapTotal)
     });
+    await processes.remove({ _updatedAt: { $lte: Date.now() - days(3) } })
   });
 
-  cron.start();
-
-  // -----
-  //  SETUP ROUTES
-  // -----
-
-  router.get('/stats', async (req, res, next) => {
-    const user    = _.get(req, "ctx.user");
-
-    if (!user || !user.isAdmin()) {
-      return FORBIDDEN.send(res);
-    }
-
-    const records   = _.sortBy(await sysStats.findAll(), ['_createdAt']);
-    const machines  = {};
-
-    _.each(records, (record) => {
-      machines[record.machineId] = machines[record.machineId] || {
-        machineId: record.machineId,
-        machineInfo: {},
-        records: []
-      };
-      let m = machines[record.machineId];
-      m.machineInfo = record.machineInfo;
-      m.records.push(_.omit(record, 'machineId', 'machineInfo'));
-    });
-
-    res.json(_.map(machines, _.id));
-  });
+  if (env() !== "test") {
+    cron.start();
+  }
 
   return router;
 }

@@ -5463,9 +5463,9 @@ pinkie@^2.0.0:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
 
-pocket-schema@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/pocket-schema/-/pocket-schema-1.0.5.tgz#e4c781b80ff17e42d87355e21f02fed490446182"
+pocket-schema@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/pocket-schema/-/pocket-schema-1.0.6.tgz#6bc25015df40792bb7a88b78d3416085cfb42777"
   dependencies:
     "@types/lodash" "^4.14.119"
     "@types/moment" "^2.13.0"
@@ -7371,6 +7371,10 @@ union-value@^1.0.0:
 uniq@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/uniq/-/uniq-1.0.1.tgz#b31c5ae8254844a3a8281541ce2b04b865a734ff"
+
+uniqid@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/uniqid/-/uniqid-5.0.3.tgz#917968310edc868d50df6c44f783f32c7d80fac1"
 
 uniqs@^2.0.0:
   version "2.0.0"

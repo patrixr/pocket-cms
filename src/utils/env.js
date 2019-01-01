@@ -8,8 +8,8 @@ let env = process.env.NODE_ENV || "dev";
  * @returns {String} the environment name
  */
 module.exports = function(newEnv = null) {
-    if (newEnv) {
-        env = newEnv;
-    }
-    return env;
-} 
+  if (newEnv) {
+      env = newEnv;
+  }
+  return env;
+};

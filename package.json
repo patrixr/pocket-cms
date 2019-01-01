@@ -12,7 +12,6 @@
     "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "chart.js": "^2.7.3",
     "element-ui": "^2.4.11",
     "esdoc": "^1.1.0",
     "esdoc-standard-plugin": "^1.0.0",
@@ -26,7 +25,6 @@
     "supertest": "^3.0.0",
     "url-loader": "^0.6.2",
     "vue": "^2.5.17",
-    "vue-chartjs": "^3.4.0",
     "vue-hot-reload-api": "^2.3.1",
     "vue-router": "^3.0.1",
     "vue-store": "^0.3.1-moved",
@@ -36,8 +34,8 @@
   "scripts": {
     "serve": "node bin/serve.js",
     "serve:watch": "nodemon bin/serve.js",
-    "test": "mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
-    "test:watch": "mocha --bail --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
+    "test": "NODE_ENV=test mocha --colors -r test/setup --recursive test/*.test.js test/**/*.test.js",
+    "test:watch": "NODE_ENV=test mocha --bail --colors --watch -r test/setup --recursive test/*.test.js test/**/*.test.js",
     "start": "npm run serve",
     "document": "esdoc",
     "build": "parcel build src/admin/frontend/index.html --out-dir dist/admin",
@@ -57,9 +55,10 @@
     "modifyjs": "^0.3.1",
     "mongodb": "^3.1.7",
     "nedb": "^1.8.0",
-    "pocket-schema": "^1.0.5",
+    "pocket-schema": "^1.0.6",
     "q": "^1.5.1",
     "systeminformation": "^3.52.7",
+    "uniqid": "^5.0.3",
     "uuid": "^3.2.1"
   }
 }

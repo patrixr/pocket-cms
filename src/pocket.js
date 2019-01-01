@@ -33,7 +33,7 @@ class Pocket {
         this.fileStore = stores.createFileStore(this);
 
         // --- Cron
-        this.cron = cron(this);
+        this.cron = cron;
 
         // --- Setup user manager
         this.users = new UserManager(this);
@@ -46,6 +46,7 @@ class Pocket {
 
         const onShutdown = async () => {
             console.log('\nShutting down Pocket');
+            this.cron.stopAll();
             await this.close();
             process.exit(0);
         }
