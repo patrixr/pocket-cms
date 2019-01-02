@@ -440,6 +440,18 @@ class Resource {
     return this.attachments.stream(attachmentId);
   }
 
+  /**
+   * Stream records
+   *
+   * @param {*} query
+   * @param {*} function
+   * @memberof Resource
+   */
+  async each(query, fn) {
+    await this.store.ready()
+    await this.store.each(this.name, query, {}).do(fn);
+  }
+
   // ---- HOOKS
 
   runHooks(data) {

@@ -290,6 +290,20 @@ _.each(setupsToTest, ({ config, bootstrap, close }, key) => {
       expect(rawData).not.to.have.property('nickname');
     });
 
+    it("Should allow streaming records", async () => {
+      for (let i = 0; i < 10; ++i) {
+        await resource.create({ username: "John " + i });
+      }
+
+      let count = 0;
+      await resource.each({}, async (record) => {
+        expect(record.username).to.match(/John \d/);
+        count++;
+      });
+
+      expect(count).to.equal(10);
+    });
+
     describe("Hooks", () => {
       afterEach(done => {
         schema.clearHooks();

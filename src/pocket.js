@@ -12,6 +12,8 @@ const admin             = require('./admin');
 const Schema            = require("./schema");
 const monitor           = require("./monitor");
 const cron              = require("./utils/cron");
+const EventEmitter      = require("events");
+const logger            = require("./utils/logger");
 
 
 /**
@@ -19,9 +21,12 @@ const cron              = require("./utils/cron");
  *
  * @class Pocket
  */
-class Pocket {
+class Pocket extends EventEmitter {
 
     constructor(config) {
+        super();
+
+        this.logger = logger;
 
         this.resources = {};
 
@@ -97,6 +102,9 @@ class Pocket {
 
         const resource = new Resource(name, schema, this);
         this.resources[resource.name] = resource;
+
+        this.emit('newResource', resource);
+
         return resource;
     }
 
