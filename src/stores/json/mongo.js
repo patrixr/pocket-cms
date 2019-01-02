@@ -1,12 +1,10 @@
 const { MongoClient } = require("mongodb");
-const BaseAdapter = require("./base");
-const assert = require("assert");
-const log4js = require("log4js");
-const Q = require("q");
-const _ = require("lodash");
-const { promisify } = require("../../utils/helpers");
-
-const logger = log4js.getLogger();
+const BaseAdapter     = require("./base");
+const assert          = require("assert");
+const Q               = require("q");
+const _               = require("lodash");
+const { promisify }   = require("../../utils/helpers");
+const logger          = require("../../utils/logger");
 
 class MongoAdapter extends BaseAdapter {
   constructor(pocket, config) {

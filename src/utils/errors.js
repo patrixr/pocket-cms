@@ -1,8 +1,6 @@
-const _        = require("lodash");
-const log4js   = require("log4js");
-const Q        = require('q');
-
-const logger = log4js.getLogger();
+const _         = require("lodash");
+const Q         = require('q');
+const logger    = require('./logger');
 
 const defaultErrorMessages = {
     400: "Bad request",

@@ -121,13 +121,17 @@ class Pocket extends EventEmitter {
     }
 
     /**
-     * Sets up the routes
+     * Sets up the routes and returns the server
      *
      * @returns {Express} app an express app
      * @memberof CMS
      */
-    middleware() {
-        let app = express();
+    server() {
+        if (this.app) {
+            return this.app;
+        }
+
+        let app = this.app = express();
 
         app.use((req, res, next) => {
             res.header("Access-Control-Allow-Origin", "*");
@@ -157,6 +161,39 @@ class Pocket extends EventEmitter {
         return app;
     }
 
+    /**
+     * Sets up the routes and returns the server
+     *
+     * @returns {Express} app an express app
+     * @memberof CMS
+     */
+    middleware() {
+        return this.server();
+    }
+
+    /**
+     * Attach a plugin to Pocket
+     *
+     * @param {*} plugin
+     * @memberof Pocket
+     */
+    use(name, plugin) {
+        const middleware = plugin(this);
+        if (middleware) {
+            this.mount(`/plugins/${name}`, middleware);
+        }
+    }
+
+    /**
+     * Mount an express middleware
+     *
+     * @param {*} path
+     * @param {*} router
+     * @memberof Pocket
+     */
+    mount(path, router) {
+        this.server().use(path, router);
+    }
 
     /**
      * Returns a promise that resolves once Pocket has been initialised

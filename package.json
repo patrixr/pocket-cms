@@ -1,6 +1,6 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "src/pocket.js",
   "license": "MIT",
   "devDependencies": {
@@ -49,7 +49,6 @@
     "express": "^4.16.2",
     "jsonwebtoken": "^8.3.0",
     "lodash": "^4.17.5",
-    "log4js": "^2.5.2",
     "mkdirp": "^0.5.1",
     "mmmagic": "^0.5.0",
     "modifyjs": "^0.3.1",
