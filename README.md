@@ -69,14 +69,14 @@ Features planned:
 Firstly, install `pocket-cms` as a dependency of your project.
 
 ```bash
-npm install --save pocket-mms
+npm install --save pocket-cms
 ```
 
 In your Node project, hook pocket to your express server :
 
 ```javascript
 var express = require("express");
-var Pocket = require("pocket-mms");
+var Pocket = require("pocket-cms");
 
 var app = express();
 var cms = new Pocket();
