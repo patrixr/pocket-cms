@@ -1,8 +1,18 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "src/pocket.js",
   "license": "MIT",
+  "description": "A pocket sized CMS as an express middleware",
+  "repository": "patrixr/pocket-cms",
+  "author": "Patrick R",
+  "keywords": [
+    "schema",
+    "cms",
+    "api",
+    "web",
+    "admin"
+  ],
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
     "@babel/plugin-transform-runtime": "^7.1.0",
