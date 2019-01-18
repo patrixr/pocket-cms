@@ -1,6 +1,6 @@
 {
   "name": "pocket-cms",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "main": "src/pocket.js",
   "license": "MIT",
   "description": "A pocket sized CMS as an express middleware",
@@ -67,7 +67,7 @@
     "modifyjs": "^0.3.1",
     "mongodb": "^3.1.7",
     "nedb": "^1.8.0",
-    "pocket-schema": "^1.0.6",
+    "pocket-schema": "^1.0.7",
     "q": "^1.5.1",
     "systeminformation": "^3.52.7",
     "uniqid": "^5.0.3",
