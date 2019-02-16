@@ -2,6 +2,7 @@ cjs
 db
 db_test
 
+.DS_Store
 .cache
 .vscode
 admin_dist

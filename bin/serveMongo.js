@@ -4,8 +4,6 @@ const Pocket  = require("../src/pocket");
 let server  = express();
 let port    = 8000;
 
-logger.level = 'info';
-
 const pocket = new Pocket({
     datastore: {
         adapter: 'mongo',

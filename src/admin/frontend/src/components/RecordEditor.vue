@@ -55,6 +55,11 @@
           <span slot="label"><i class="el-icon-picture"></i> Files </span>
           <file-list :record='selectedRecord' :resource='resource' />
         </el-tab-pane>
+
+        <el-tab-pane v-if='!isNewRecord'>
+          <span slot="label"><i class="el-icon-info"></i> Meta </span>
+          <Meta :resource="resource" :record="selectedRecord"></Meta>
+        </el-tab-pane>
       </el-tabs>
     </el-main>
 
@@ -66,6 +71,7 @@
   import PocketService  from '../services/PocketService'
   import RecordInput    from './RecordInput'
   import FileList       from './FileList'
+  import Meta           from './RecordMeta'
   import { mapGetters } from "vuex"
   import _              from "lodash"
   import common         from '../mixins/common'
@@ -75,7 +81,8 @@
     mixins: [common],
     components: {
       RecordInput,
-      FileList
+      FileList,
+      Meta
     },
     data() {
       return {
@@ -98,7 +105,7 @@
         "authToken"
       ]),
       fields() {
-        return _.find(this.schemas, ['name', this.resource]).fields;
+        return _.reject(_.find(this.schemas, ['name', this.resource]).fields, 'computed')
       },
       resource() {
         return this.options.resource;

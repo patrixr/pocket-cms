@@ -1,0 +1,19 @@
+<template>
+   <div class="record-number-input">
+     <el-time-select
+      v-model="record[field.name]"
+      :picker-options="{
+        start: '00:00',
+        step: '00:15',
+        end: '23:45'
+      }"
+      placeholder="Select time">
+      </el-time-select>
+  </div>
+</template>
+
+<script>
+export default {
+  props: ['record', 'field']
+}
+</script>

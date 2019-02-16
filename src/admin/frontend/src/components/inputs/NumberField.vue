@@ -1,5 +1,5 @@
 <template>
-   <div>
+   <div class="record-number-input">
     <el-input-number
       :max="field.max || Infinity"
       :nin="field.min || Infinity"
@@ -14,3 +14,10 @@ export default {
 }
 </script>
 
+<style lang="scss">
+  .record-number-input {
+    .el-icon-minus, .el-icon-plus {
+      line-height: 38px;
+    }
+  }
+</style>

@@ -698,19 +698,7 @@
     "@parcel/utils" "^1.11.0"
     physical-cpu-count "^2.0.0"
 
-"@types/lodash@^4.14.119":
-  version "4.14.120"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.120.tgz#cf265d06f6c7a710db087ed07523ab8c1a24047b"
-  integrity sha512-jQ21kQ120mo+IrDs1nFNVm/AsdFxIx2+vZ347DbogHJPd/JzKNMOqU6HCYin1W6v8l5R9XSO2/e9cxmn7HAnVw==
-
-"@types/moment@^2.13.0":
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@types/moment/-/moment-2.13.0.tgz#604ebd189bc3bc34a1548689404e61a2a4aac896"
-  integrity sha1-YE69GJvDvDShVIaJQE5hoqSqyJY=
-  dependencies:
-    moment "*"
-
-"@types/node@*", "@types/node@^10.11.7", "@types/node@^10.12.18":
+"@types/node@*", "@types/node@^10.11.7":
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
   integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
@@ -719,11 +707,6 @@
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.1.tgz#48fd98c1561fe718b61733daed46ff115b496e18"
   integrity sha512-eqz8c/0kwNi/OEHQfvIuJVLTst3in0e7uTKeuY+WL/zfKn0xVujOTp42bS/vUUokhK5P2BppLd9JXMOMHcgbjA==
-
-"@types/require-dir@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/require-dir/-/require-dir-1.0.0.tgz#c68e8c4c3a35bc2f2b3145cb184d116169c1c8d3"
-  integrity sha512-KkJBNlfnyLYYj5y4j5081oFkaAbS56jeoYWJ3unpcj5yhRH+MNq4T9Ocbe8e0d/BP0At+m5Qcz8bj0p6NqQW3g==
 
 "@types/semver@^5.5.0":
   version "5.5.0"
@@ -4095,6 +4078,11 @@ is-color-stop@^1.0.0:
     rgb-regex "^1.0.1"
     rgba-regex "^1.0.0"
 
+is-css-color@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/is-css-color/-/is-css-color-1.0.0.tgz#110198cdddb1553c39365e29c75fdbb502170bbf"
+  integrity sha1-EQGYzd2xVTw5Nl4px1/btQIXC78=
+
 is-data-descriptor@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz#0b5ee648388e2c860282e793f1856fec3f301b56"
@@ -5042,7 +5030,7 @@ modifyjs@^0.3.1:
     clone "^2.1.1"
     deep-equal "^1.0.1"
 
-moment@*, moment@^2.23.0:
+moment@^2.23.0:
   version "2.23.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.23.0.tgz#759ea491ac97d54bac5ad776996e2a58cc1bc225"
   integrity sha512-3IE39bHVqFbWWaPOMHZF98Q9c3LDKGTmypMiTM2QygGXXElkFWIH7GxfmlwmY2vwa+wmNsoYZmG2iusf1ZjJoA==
@@ -5771,15 +5759,12 @@ pinkie@^2.0.0:
   resolved "https://registry.yarnpkg.com/pinkie/-/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
   integrity sha1-clVrgM+g1IqXToDnckjoDtT3+HA=
 
-pocket-schema@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/pocket-schema/-/pocket-schema-1.0.6.tgz#6bc25015df40792bb7a88b78d3416085cfb42777"
-  integrity sha512-6If7MRso9Lejj1SXEMd7rq9v5pRm+q1PoP6x7mJpf2e+Fenw/nP/mSN+VQ0uZUFt3liekRiJx2R3hBMJ2a1hhA==
+pocket-schema@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/pocket-schema/-/pocket-schema-1.1.0.tgz#6f0c853bbdcdaf45baa88cd82a38f856f46f870d"
+  integrity sha512-Nr7yvLdhO0EWbR84V8QtlGvOBgCyNZ4Fs6XUXOOd32/q+uQjnVOdIh+vSaboaKrHl4laKPw7VUtqX1Uxq2w2jQ==
   dependencies:
-    "@types/lodash" "^4.14.119"
-    "@types/moment" "^2.13.0"
-    "@types/node" "^10.12.18"
-    "@types/require-dir" "^1.0.0"
+    is-css-color "^1.0.0"
     lodash "^4.17.11"
     moment "^2.23.0"
     require-dir "^1.2.0"

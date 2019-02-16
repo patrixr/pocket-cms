@@ -5,8 +5,6 @@ var { Schema } = require("../src/pocket");
 let server = express();
 let port = 8000;
 
-logger.level = "info";
-
 const pocket = new Pocket();
 
   const post = new Schema({
@@ -15,7 +13,42 @@ const pocket = new Pocket();
       type: "select",
       options: ["media", "statistics", "achievement"]
     },
+    multiselect: {
+      type: "multiselect",
+      options: ["opt1", "opt2", "opt3"]
+    },
     message: "string",
+    color: "color",
+    count: {
+      required: true,
+      type: "number",
+      default: 33
+    },
+    boolean: {
+      type:"boolean"
+    },
+    checkbox: {
+      type: "checkbox"
+    },
+    isNotNice: {
+      type: "boolean",
+      computed: true,
+      compute(data) {
+        return !data.isNice;
+      }
+    },
+    time: {
+      type: "time",
+    },
+    date: {
+      type: "date"
+    },
+    datetime: {
+      type: "datetime"
+    },
+    timestamp: {
+      type: "timestamp"
+    },
     meta: {
       type: "list",
       minItems: 1,
